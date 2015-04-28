@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grafiy</title>
+    <script>t = function(text){return text}</script>
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script language="javascript" type="text/javascript" src="lib/d3.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototype/client.core.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/object.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/function.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/enumerable.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/array.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/string.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/number.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/regexp.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/date.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/class.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/range.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/hash.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/periodical_executer.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/template.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/prototype.oo.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototypeJS/lang/livepipe.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototype/prototype.client.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/md5/md5.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototype/proto.menu.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototype/proto.history.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototype/cookiejar.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/prototype/protopass.js"></script>
+    <script language="javascript" type="text/javascript" src="Util.js"></script>
+    <script language="javascript" type="text/javascript" src="View.js"></script>
+    <script language="javascript" type="text/javascript" src="graph/view.js"></script>
+    <script language="javascript" type="text/javascript" src="Record.js"></script>
+    <script language="javascript" type="text/javascript" src="Item.js"></script>
+
+    <script language="javascript" type="text/javascript" src="graph/LinkMan.js"></script>
+    <script language="javascript" type="text/javascript" src="graph/ItemMan.js"></script>
+
+    <script language="javascript" type="text/javascript" src="Application.js"></script>
+    <script language="javascript" type="text/javascript" src="lib/jquery.js"></script>
+  </head>
+  <body>
+<style>
+    </style>
+    <div class="actionBar">
+      <div class="actionsMenu">
+        <ul id="BookmarksMenu">
+          <li>Select</li>
+        </ul>
+      </div>
+      <div class="rightLayout">
+        <div class="searchRow">
+          <input type="text" class="searchField form-control" id="tokenfield" data-bind="tokenField: tags, raiseTokenEvents: true" autofocus="autofocus" autocomplete="off" />
+          <button class="" onclick="$app.load(jQuery('#tokenfield').val())">Load tiles</button>
+          <button class="" onclick="$view.change('Grid')">Grid</button>
+          <button class="" onclick="$view.change('SmallGrid')">Small Grid</button>
+          <button class="" onclick="$view.change('List')">List</button>
+          <button class="" onclick="$view.change('Graph')">Graph</button>
+        </div>
+        <div class="filterBar">
+        </div>
+
+        <div id="container">
+          <script>jQuery.noConflict()</script>
+
+        </div> <!-- /container -->
+      </div> <!-- /rightLayout -->
+    </div>
+
+    <div id="desktop"></div>
+    <script>jQuery.ready($app = new Application())</script>
+
+  </body>
+</html>

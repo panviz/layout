@@ -1,0 +1,17 @@
+.Grid.tileTitle {
+  background-color: rgba(51,51,51, 0.5);
+  padding: 6px;
+  margin: 0;
+}
+.tileTitleBody{
+  margin: 0;
+}
+.SmallGrid.tileTitle {
+  background-color: rgba(51,51,51, 0.5);
+  padding: 4px;
+  margin: 0;
+}
+.List.tileTitle {
+  padding: 15px 0 0 35px;
+  margin: 0;
+}
