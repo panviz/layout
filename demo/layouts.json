@@ -1,0 +1,17 @@
+{
+  "grid": {
+    "name": "Grid",
+    "type": "Grid",
+    "config": {
+      "node": { "width": 200, "height": 200 }
+    }
+  },
+  "list": {
+    "name": "List",
+    "type": "Grid",
+    "config": {
+      "node": { "height": 20 },
+      "columns": 1
+    }
+  }
+}
