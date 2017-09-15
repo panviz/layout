@@ -1,6 +1,6 @@
 /**
  * Grid view
- * Items are considered as rectangles
+ * Nodes are considered as rectangles
  */
 import Layout from './layout'
 /**
@@ -11,7 +11,6 @@ import Layout from './layout'
 export default class Grid extends Layout {
   constructor (p = {}) {
     super(p)
-    this._name = 'Grid'
   }
 
   static get defaults () {
@@ -29,7 +28,9 @@ export default class Grid extends Layout {
   set spacing (value) {
     this.p.spacing = _.isPlainObject(value) ? value : { x: value, y: value }
   }
-
+  /**
+   * Algorythm
+   */
   run () {
     if (_.isEmpty(this.nodes)) return
     const offset = this.p.offset

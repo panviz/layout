@@ -2,22 +2,22 @@
   "name": "Graphiy.layout",
   "version": "0.0.2",
   "description": "Layouts",
+  "keywords": [
+    "data visualization",
+    "layout algorythm"
+  ],
+  "homepage": "",
+  "license": "SEE LICENSE IN LICENSE",
   "main": "dist/bundle.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/Graphiy/layout"
   },
-  "homepage": "",
-  "keywords": [
-    "layout algorythm",
-    "data visualization"
-  ],
-  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "build": "webpack",
     "lint": "eslint .",
-    "test": "mocha test/unit",
-    "start": "webpack-dev-server --port 8007"
+    "start": "webpack-dev-server --port 8007",
+    "test": "yarn lint"
   },
   "babel": {
     "presets": [
@@ -34,28 +34,30 @@
     ]
   },
   "dependencies": {
-    "d3-dsv": "^1.0.7",
-    "d3-selection": "^1.1.0",
     "eventemitter3": "^2.0.3",
-    "jquery": "^3.2.1",
-    "lodash": "^4.17.4",
-    "style-loader": "^0.18.2",
     "webcola": "^3.3.6"
+  },
+  "peerDependencies": {
+    "lodash": "^4.x"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.6.0",
     "css-loader": "^0.28.4",
+    "d3-dsv": "^1.0.7",
+    "d3-selection": "^1.1.0",
     "eslint": "^4.3.0",
     "eslint-config-airbnb": "^15.1.0",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.1.0",
     "extract-text-webpack-plugin": "2.1.2",
+    "jquery": "^3.2.1",
     "mocha": "^3.5.0",
     "node-sass": "^4.5.3",
     "raw-loader": "^0.5.1",
     "sass-loader": "^6.0.6",
+    "style-loader": "^0.18.2",
     "webpack": "^3.4.1",
     "webpack-dev-server": "^2.7.1"
   }

@@ -37,12 +37,12 @@ export default class Layout extends EventEmitter {
   run (nodes) {
     if (_.isEmpty(this.coords)) return
     this.emit('end')
-    console.log('run')
   }
   /**
    * @param id
    */
   fix (id) {
+    this.coords[id].fixed = true
   }
   /**
    * @param id

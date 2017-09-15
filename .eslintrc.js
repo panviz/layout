@@ -11,7 +11,7 @@ module.exports = {
     'space-before-function-paren': ['error', 'always'],
     'no-console': ['error', { allow: ['info', 'warn', 'error'] }],
     // it is necessary to document what is passed to callback
-    'no-unused-vars': ['error', { 'args': 'none' }],
+    'no-unused-vars': ['error', { args: 'none' }],
     // undefined is pretty usefull by itself
     'no-undefined': 0,
     // no need in empty parentheses after self-explanatory new tagKeysword
@@ -20,7 +20,10 @@ module.exports = {
     // naming convention for private methods and params
     'no-underscore-dangle': 0,
     // non-critical errors can be just catched
-    'no-empty': ['error', { 'allowEmptyCatch': true }],
+    'no-empty': ['error', { allowEmptyCatch: true }],
+    'import/no-extraneous-dependencies': ['error', {
+      devDependencies: true,
+    }],
   },
   env: {
     mocha: true,
@@ -29,7 +32,5 @@ module.exports = {
     _: true,
     $: true,
     d3: true,
-    G: true,
-    DEBUG: true,
   },
 }
