@@ -1,0 +1,12 @@
+.switcher {
+  button {
+    display: block;
+    width: 100px;
+    height: 25px;
+  }
+  button.active {
+    background-color: burlywood;
+    outline: none;
+  }
+  margin: 20px
+}
