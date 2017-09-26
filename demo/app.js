@@ -30,8 +30,8 @@ class App {
     })
 
     this.renderControls()
-    this.changeTemplate('row')
-    this.changeLayout(layoutSets.list)
+    this.changeTemplate('circle')
+    this.changeLayout(layoutSets.force)
   }
 
   renderControls () {
@@ -63,10 +63,51 @@ class App {
   updatePosition () {
     const coords = this.layout.coords
     const nodes = $('.node')
+
+    if (!this.container.selectAll('svg').nodes.length) {
+      this.container.selectAll('svg').remove()
+    }
+    if (this.layout.constructor.name === 'Force') {
+      this._updateForcePosition()
+    }
     _.each(nodes, (node, i) => {
       const coord = coords[i]
       $(node).css({ transform: `translate(${coord.x}px, ${coord.y}px)` })
     })
+
+  }
+
+  _updateForcePosition () {
+    const linksCoords = this.layout.linksCoords
+    let svg = this.container.select('svg')
+    if (!svg.nodes().length) {
+      svg = this.container.append('svg')
+        .attr('width', this.container.node().getBoundingClientRect().width)
+        .attr('height', document.documentElement.clientHeight)
+    }
+   /* const node = this.container.selectAll('.circle')
+      .data(this.layout.coords)
+
+    node.attr('style', d => {
+      return `transform: translate(${d.x}px, ${d.y}px)`
+    })*/
+
+    const line = svg.selectAll('line')
+      .data(linksCoords)
+
+    line.enter()
+      .append('line')
+      .attr('x1', d => d.x1)
+      .attr('y1', d => d.y1)
+      .attr('x2', d => d.x2)
+      .attr('y2', d => d.y2)
+      .attr('stroke-width', 1)
+      .attr('stroke', 'black')
+
+    line.attr('x1', d => d.x1)
+      .attr('y1', d => d.y1)
+      .attr('x2', d => d.x2)
+      .attr('y2', d => d.y2)
   }
 
   changeLayout (d) {
@@ -75,6 +116,7 @@ class App {
     this.layout.on('end', this.updatePosition.bind(this))
     const layoutSet = _.extend({
       width: this.container.node().getBoundingClientRect().width,
+      height: document.documentElement.clientHeight,
     }, d.config)
 
     this.layout.p = layoutSet
@@ -86,40 +128,24 @@ class App {
   }
 
   prepereDataForForceLayout (data) {
-    let _data = _.cloneDeep(data)
+    const _data = _.cloneDeep(data)
     const source = {}
-    const target = []
     const links = []
     _.each(_data, (node, i) => {
-      if(node.id === node.group){
+      if (node.id === node.group) {
         source[node.group] = i
         delete _data[i]
       }
     })
-
     _.each(_data, (node, i) => {
-        if(node){
-          const sourceIndex = source[node.group]
-          const targetIndex = i
-          links.push({source: sourceIndex, target: targetIndex})
-        }
+      if (node) {
+        const sourceIndex = source[node.group]
+        const targetIndex = i
+        links.push({ source: sourceIndex, target: targetIndex })
+      }
     })
 
-/*    return { items: [
-      { id: 'Pink', group: 'Pink' },
-      { id: 'LightPink', group: 'Pink' },
-      { id: 'HotPink', group: 'Pink' },
-      { id: 'Purple', group: 'Purple' },
-      { id: 'Magenta', group: 'Purple' },
-    ],
-    edges: [
-      { source: 0, target: 1 },
-      { source: 0, target: 2 },
-      { source: 3, target: 4 },
-    ] }*/
-
-
-    return { items: data, edges: links}
+    return { items: data, edges: links }
   }
 }
 new App() // eslint-disable-line

@@ -18,7 +18,7 @@
     "name": "Force",
     "type": "Force",
     "config": {
-      "node": { "width": 200, "height": 200 }
+      "node": { "width": 20, "height": 20 }
     }
   }
 }
