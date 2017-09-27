@@ -7,7 +7,7 @@
     "layout algorythm"
   ],
   "homepage": "",
-  "license": "MIT",
+  "license": "GPL-3.0+",
   "main": "build/bundle.js",
   "module": "index",
   "repository": {
