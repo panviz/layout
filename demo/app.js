@@ -1,5 +1,6 @@
 import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
+import * as d3Transition from 'd3-transition'
 
 import Grid from '../src/grid'
 import Force from '../src/force'
@@ -31,7 +32,7 @@ class App {
 
     this.renderControls()
     this.changeTemplate('circle')
-    this.changeLayout(layoutSets.force)
+    this.changeLayout(layoutSets.list)
   }
 
   renderControls () {
@@ -64,38 +65,45 @@ class App {
     const coords = this.layout.coords
     const nodes = $('.node')
 
-    if (!this.container.selectAll('svg').nodes.length) {
+    if (this.container.selectAll('svg').nodes().length && this.layout.constructor.name !== 'Force') {
       this.container.selectAll('svg').remove()
     }
+
     if (this.layout.constructor.name === 'Force') {
-      this._updateForcePosition()
+      let svg = this.container.select('svg')
+      if (!svg.nodes().length) {
+        svg = this._initialize()
+      }
+      this._updateLinePosition(svg)
     }
     _.each(nodes, (node, i) => {
       const coord = coords[i]
       $(node).css({ transform: `translate(${coord.x}px, ${coord.y}px)` })
     })
-
   }
 
-  _updateForcePosition () {
+  _updateLinePosition (svg) {
     const linksCoords = this.layout.linksCoords
-    let svg = this.container.select('svg')
-    if (!svg.nodes().length) {
-      svg = this.container.append('svg')
-        .attr('width', this.container.node().getBoundingClientRect().width)
-        .attr('height', document.documentElement.clientHeight)
-    }
-   /* const node = this.container.selectAll('.circle')
-      .data(this.layout.coords)
-
-    node.attr('style', d => {
-      return `transform: translate(${d.x}px, ${d.y}px)`
-    })*/
-
-    const line = svg.selectAll('line')
+    const transition = d3Transition.transition
+    svg.selectAll('line')
       .data(linksCoords)
+      .transition()
+      .duration(800)
+      .attr('x1', d => d.x1)
+      .attr('y1', d => d.y1)
+      .attr('x2', d => d.x2)
+      .attr('y2', d => d.y2)
+  }
 
-    line.enter()
+  _initialize () {
+    const startLinksPosition = this._calcStartLinksPosition()
+    const svg = this.container.append('svg')
+      .attr('width', this.container.node().getBoundingClientRect().width)
+      .attr('height', document.documentElement.clientHeight)
+
+    svg.selectAll('line')
+      .data(startLinksPosition)
+      .enter()
       .append('line')
       .attr('x1', d => d.x1)
       .attr('y1', d => d.y1)
@@ -104,12 +112,26 @@ class App {
       .attr('stroke-width', 1)
       .attr('stroke', 'black')
 
-    line.attr('x1', d => d.x1)
-      .attr('y1', d => d.y1)
-      .attr('x2', d => d.x2)
-      .attr('y2', d => d.y2)
+    return svg
   }
 
+  _calcStartLinksPosition () {
+    const coords = []
+    let items = d3Selection.selectAll('.node')
+    const links = this.layout.nodes.edges
+    _.each(links, (link, i) => {
+      let source = items.nodes()[link.source.index].style.transform.slice(10, -1)
+      let target = items.nodes()[link.target.index].style.transform.slice(10, -1)
+      source = source.split(',')
+      target = target.split(',')
+      coords[i] = {
+        x1: parseFloat(source[0]),
+        y1: parseFloat(source[1]),
+        x2: parseFloat(target[0]),
+        y2: parseFloat(target[1]) }
+    })
+    return coords
+  }
   changeLayout (d) {
     if (this.layout) this.layout.off('end')
     this.layout = this.layouts.find(l => l.constructor.name === d.type)

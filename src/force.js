@@ -21,18 +21,20 @@ export default class Force extends Layout {
    */
   run () {
     if (_.isEmpty(this.nodes)) return
+    this._initPosition()
 
     d3Force.forceSimulation(this.nodes.items)
-      .force('link', d3Force.forceLink(this.nodes.edges).distance(40))
-      .force('charge', d3Force.forceManyBody().strength(-40))
-      .force('collide', d3Force.forceCollide(15).strength(1))
+      .force('link', d3Force.forceLink(this.nodes.edges).distance(50))
+      .force('charge', d3Force.forceManyBody().strength(-3))
+      .force('collide', d3Force.forceCollide(25).strength(4))
       .force('center', d3Force.forceCenter(this.p.width / 2, this.p.height / 2))
-      .alphaMin(0.5)
-      //.on('end', this._end.bind(this))
-      .on('tick', this._end.bind(this))
+      .force('center', d3Force.forceX(this.p.width / 2).strength(0.04))
+      .force('center', d3Force.forceY(this.p.height / 2).strength(0.04))
+      .alphaMin(0.6)
+      .on('end', this._getCoords.bind(this))
   }
 
-  _end () {
+  _getCoords () {
     const coords = this.coords
     const linksCoords = this.linksCoords
 
@@ -52,4 +54,12 @@ export default class Force extends Layout {
     super.run()
   }
 
+  _initPosition () {
+    const x = this.p.width / 2
+    const y = this.p.height / 2
+    _.each(this.nodes.items, (node, i) => {
+      node.x = x
+      node.y = y
+    })
+  }
 }
