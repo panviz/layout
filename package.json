@@ -7,15 +7,16 @@
     "layout algorythm"
   ],
   "homepage": "",
-  "license": "SEE LICENSE IN LICENSE",
-  "main": "dist/bundle.js",
+  "license": "MIT",
+  "main": "build/bundle.js",
+  "module": "index",
   "repository": {
     "type": "git",
     "url": "https://github.com/Graphiy/layout"
   },
   "scripts": {
     "build": "webpack",
-    "lint": "eslint .",
+    "lint": "eslint . --ignore-path .gitignore",
     "start": "webpack-dev-server --port 8007",
     "test": "yarn lint"
   },
@@ -26,7 +27,7 @@
         {
           "targets": {
             "browsers": [
-              "chrome >= 59"
+              "last 2 versions"
             ]
           }
         }
@@ -37,20 +38,14 @@
     "eventemitter3": "^2.0.3",
     "webcola": "^3.3.6"
   },
-  "peerDependencies": {
-    "lodash": "^4.x"
-  },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.6.0",
     "css-loader": "^0.28.4",
     "d3-dsv": "^1.0.7",
     "d3-selection": "^1.1.0",
-    "eslint": "^4.3.0",
-    "eslint-config-airbnb": "^15.1.0",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-react": "^7.1.0",
+    "eslint": "^4.6.0",
+    "eslint-config-graphiy": "Graphiy/javascript",
     "extract-text-webpack-plugin": "2.1.2",
     "jquery": "^3.2.1",
     "mocha": "^3.5.0",
@@ -60,5 +55,8 @@
     "style-loader": "^0.18.2",
     "webpack": "^3.4.1",
     "webpack-dev-server": "^2.7.1"
+  },
+  "peerDependencies": {
+    "lodash": "4.x"
   }
 }
