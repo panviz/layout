@@ -33,8 +33,13 @@ class App {
     this.renderControls()
     this.changeTemplate('circle')
     this.changeLayout(layoutSets.list)
+
+    $(window).on('resize', this.resize.bind(this))
   }
 
+  resize () {
+    this.layout.p.width = this.container.node().getBoundingClientRect().width
+  }
   renderControls () {
     d3Selection.select('.layout').selectAll('button')
       .data(_.values(layoutSets))
