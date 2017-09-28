@@ -18,7 +18,8 @@
     "name": "Force",
     "type": "Force",
     "config": {
-      "node": { "width": 20, "height": 20 }
+      "node": { "width": 20, "height": 20 },
+      "distance": 50
     }
   }
 }

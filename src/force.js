@@ -2,14 +2,11 @@
  * Force view
  * Nodes are considered as rectangles
  */
-import Layout from './layout'
 import * as d3Force from 'd3-force'
+import Layout from './layout'
 
-import * as d3Selection from 'd3-selection'
 /**
- * @param {Object || Number} p.spacing horizontal and vertical distance between nodes
- * @param Point p.offset {x,y} coordinates where to place first node
- * @param Object p.node {width, height} of node (add to spacing when calculating next node position)
+ * @param Number p.distance link force distance
  */
 export default class Force extends Layout {
   constructor (p = {}) {
@@ -24,7 +21,7 @@ export default class Force extends Layout {
     this._initPosition()
 
     d3Force.forceSimulation(this.nodes.items)
-      .force('link', d3Force.forceLink(this.nodes.edges).distance(50))
+      .force('link', d3Force.forceLink(this.nodes.edges).distance(this.p.distance))
       .force('charge', d3Force.forceManyBody().strength(-3))
       .force('collide', d3Force.forceCollide(25).strength(4))
       .force('center', d3Force.forceCenter(this.p.width / 2, this.p.height / 2))

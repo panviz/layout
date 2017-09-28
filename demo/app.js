@@ -22,7 +22,7 @@ class App {
     this.layouts = _.map(Layouts, (L) => {
       const instance = new L()
       if (instance.constructor.name === 'Force') {
-        const data = this.prepereDataForForceLayout(this.data)
+        const data = this.prepereDataForForceLayout()
         instance.update(data)
       } else {
         instance.update(this.data)
@@ -132,6 +132,7 @@ class App {
     })
     return coords
   }
+
   changeLayout (d) {
     if (this.layout) this.layout.off('end')
     this.layout = this.layouts.find(l => l.constructor.name === d.type)
@@ -149,8 +150,8 @@ class App {
     this.render()
   }
 
-  prepereDataForForceLayout (data) {
-    const _data = _.cloneDeep(data)
+  prepereDataForForceLayout () {
+    const _data = _.cloneDeep(this.data)
     const source = {}
     const links = []
     _.each(_data, (node, i) => {
@@ -167,7 +168,7 @@ class App {
       }
     })
 
-    return { items: data, edges: links }
+    return { items: this.data, edges: links }
   }
 }
 new App() // eslint-disable-line
