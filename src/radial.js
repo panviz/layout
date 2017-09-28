@@ -15,11 +15,6 @@ import Layout from './layout'
 export default class Radial extends Layout {
   constructor (p = {}) {
     super(p)
-    this._name = 'Grid'
-  }
-
-  set spacing (value) {
-    this.p.spacing = value
   }
 
   run () {
