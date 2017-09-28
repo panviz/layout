@@ -2,20 +2,24 @@ import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
 
 import Grid from '../src/grid'
+import Radial from '../src/radial'
 import rawData from './data.csv'
 
 import './template/node.scss'
 import './template/row.scss'
 import './template/tile.scss'
+import './template/circle.scss'
 import './style/switcher.scss'
+
+
 import layoutSets from './layouts.json'
 
 class App {
   constructor () {
     this.container = d3Selection.select('#container')
     this.data = d3Csv.csvParse(rawData)
-    this.templates = ['row', 'tile']
-    const Layouts = [Grid]
+    this.templates = ['row', 'tile', 'circle']
+    const Layouts = [Grid, Radial]
 
     this.layouts = _.map(Layouts, (L) => {
       const instance = new L()
@@ -26,8 +30,13 @@ class App {
     this.renderControls()
     this.changeTemplate('row')
     this.changeLayout(layoutSets.list)
+
+    $(window).on('resize', this.resize.bind(this))
   }
 
+  resize () {
+    this.layout.p.width = this.container.node().getBoundingClientRect().width
+  }
   renderControls () {
     d3Selection.select('.layout').selectAll('button')
       .data(_.values(layoutSets))
