@@ -1,6 +1,6 @@
 import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
-import * as d3Transition from 'd3-transition'
+import * as d3Transition from 'd3-transition' // eslint-disable-line
 import * as d3Ease from 'd3-ease'
 
 import Grid from '../src/grid'
@@ -113,7 +113,6 @@ class App {
 
   _updateLinePosition (svg) {
     const linksCoords = this.layout.linksCoords
-    const transition = d3Transition.transition
 
     svg.selectAll('line')
       .data(linksCoords)
@@ -127,7 +126,7 @@ class App {
   }
   _calcStartLinksPosition () {
     const coords = []
-    let items = d3Selection.selectAll('.node')
+    const items = d3Selection.selectAll('.node')
     const links = this.layout.nodes.edges
     _.each(links, (link, i) => {
       let source = items.nodes()[link.source.index].style.transform.slice(10, -1)
@@ -138,7 +137,8 @@ class App {
         x1: parseFloat(source[0]),
         y1: parseFloat(source[1]),
         x2: parseFloat(target[0]),
-        y2: parseFloat(target[1]) }
+        y2: parseFloat(target[1]),
+      }
     })
     return coords
   }
