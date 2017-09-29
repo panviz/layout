@@ -9,6 +9,9 @@ import './template/node.scss'
 import './template/row.scss'
 import './template/tile.scss'
 import './template/circle.scss'
+import './style/switcher.scss'
+
+
 import layoutSets from './layouts.json'
 
 class App {
@@ -39,13 +42,15 @@ class App {
       .data(_.values(layoutSets))
       .enter()
       .append('button')
-      .html(d => d.name)
+      .html(d => `Layout ${d.name}`)
+      .attr('class', d => d.name)
       .on('click', this.changeLayout.bind(this))
     d3Selection.select('.template').selectAll('button')
       .data(this.templates)
       .enter()
       .append('button')
-      .html(d => d)
+      .html(d => `Template ${d}`)
+      .attr('class', d => d)
       .on('click', this.changeTemplate.bind(this))
   }
 
@@ -73,6 +78,10 @@ class App {
     if (this.layout) this.layout.off('end')
     this.layout = this.layouts.find(l => l.constructor.name === d.type)
     this.layout.on('end', this.updatePosition.bind(this))
+    d3Selection.selectAll('.layout button')
+      .classed('active', false)
+    d3Selection.select(`.${d.name}`)
+      .classed('active', true)
     const layoutSet = _.extend({
       width: this.container.node().getBoundingClientRect().width,
     }, d.config)
@@ -81,6 +90,10 @@ class App {
   }
 
   changeTemplate (template) {
+    d3Selection.selectAll('.template button')
+      .classed('active', false)
+    d3Selection.select(`.${template}`)
+      .classed('active', true)
     this.template = template
     this.render()
   }
