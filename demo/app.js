@@ -1,6 +1,7 @@
 import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
 import * as d3Transition from 'd3-transition'
+import * as d3Ease from 'd3-ease'
 
 import Grid from '../src/grid'
 import Force from '../src/force'
@@ -33,8 +34,13 @@ class App {
     this.renderControls()
     this.changeTemplate('circle')
     this.changeLayout(layoutSets.list)
+
+    $(window).on('resize', this.resize.bind(this))
   }
 
+  resize () {
+    this.layout.p.width = this.container.node().getBoundingClientRect().width
+  }
   renderControls () {
     d3Selection.select('.layout').selectAll('button')
       .data(_.values(layoutSets))
@@ -82,19 +88,6 @@ class App {
     })
   }
 
-  _updateLinePosition (svg) {
-    const linksCoords = this.layout.linksCoords
-    const transition = d3Transition.transition
-    svg.selectAll('line')
-      .data(linksCoords)
-      .transition()
-      .duration(800)
-      .attr('x1', d => d.x1)
-      .attr('y1', d => d.y1)
-      .attr('x2', d => d.x2)
-      .attr('y2', d => d.y2)
-  }
-
   _initialize () {
     const startLinksPosition = this._calcStartLinksPosition()
     const svg = this.container.append('svg')
@@ -115,6 +108,20 @@ class App {
     return svg
   }
 
+  _updateLinePosition (svg) {
+    const linksCoords = this.layout.linksCoords
+    const transition = d3Transition.transition
+
+    svg.selectAll('line')
+      .data(linksCoords)
+      .transition()
+      .ease(d3Ease.easeLinear)
+      .duration(750)
+      .attr('x1', d => d.x1)
+      .attr('y1', d => d.y1)
+      .attr('x2', d => d.x2)
+      .attr('y2', d => d.y2)
+  }
   _calcStartLinksPosition () {
     const coords = []
     let items = d3Selection.selectAll('.node')

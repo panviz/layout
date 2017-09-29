@@ -25,8 +25,8 @@ export default class Force extends Layout {
       .force('charge', d3Force.forceManyBody().strength(-3))
       .force('collide', d3Force.forceCollide(25).strength(4))
       .force('center', d3Force.forceCenter(this.p.width / 2, this.p.height / 2))
-      .force('center', d3Force.forceX(this.p.width / 2).strength(0.04))
-      .force('center', d3Force.forceY(this.p.height / 2).strength(0.04))
+      .force('forceX', d3Force.forceX(this.p.width / 2).strength(0.03))
+      .force('forceY', d3Force.forceY(this.p.height / 2).strength(0.03))
       .alphaMin(0.6)
       .on('end', this._getCoords.bind(this))
   }
