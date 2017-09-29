@@ -2,11 +2,13 @@ import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
 
 import Grid from '../src/grid'
+import Radial from '../src/radial'
 import rawData from './data.csv'
 
 import './template/node.scss'
 import './template/row.scss'
 import './template/tile.scss'
+import './template/circle.scss'
 import layoutSets from './layouts.json'
 
 class App {
@@ -14,8 +16,8 @@ class App {
     this.container = d3Selection.select('#container')
     this.fullData = d3Csv.csvParse(rawData)
     this.data = this.fullData
-    this.templates = ['row', 'tile']
-    const Layouts = [Grid]
+    this.templates = ['row', 'tile', 'circle']
+    const Layouts = [Grid, Radial]
 
     this.layouts = _.map(Layouts, (L) => {
       const instance = new L()
