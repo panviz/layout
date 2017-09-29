@@ -76,7 +76,9 @@ class App {
       layout.update(this.data)
     })
     this.render()
-    this.updatePosition()
+    setTimeout(() => {
+      this.updatePosition()
+    })
   }
   render () {
     this.nodes = this.container.selectAll('.node').data(this.data, d => d.id)
