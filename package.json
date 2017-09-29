@@ -44,7 +44,9 @@
     "babel-preset-env": "^1.6.0",
     "css-loader": "^0.28.4",
     "d3-dsv": "^1.0.7",
+    "d3-ease": "^1.0.3",
     "d3-selection": "^1.1.0",
+    "d3-transition": "^1.1.0",
     "eslint": "^4.6.0",
     "eslint-config-graphiy": "Graphiy/javascript",
     "extract-text-webpack-plugin": "2.1.2",
@@ -54,7 +56,6 @@
     "raw-loader": "^0.5.1",
     "sass-loader": "^6.0.6",
     "style-loader": "^0.18.2",
-    "d3-transition": "^1.1.0",
     "webpack": "^3.4.1",
     "webpack-dev-server": "^2.7.1"
   },
