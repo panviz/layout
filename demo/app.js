@@ -79,6 +79,8 @@ class App {
     setTimeout(() => {
       this.updatePosition()
     })
+    d3Selection.select('.slider h5')
+      .html(`limit data array length ${limit}`)
   }
   render () {
     this.nodes = this.container.selectAll('.node').data(this.data, d => d.id)
