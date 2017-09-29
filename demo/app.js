@@ -47,6 +47,7 @@ class App {
   resize () {
     this.layout.p.width = this.container.node().getBoundingClientRect().width
   }
+
   renderControls () {
     d3Selection.select('.layout').selectAll('button')
       .data(_.values(layoutSets))
@@ -161,6 +162,7 @@ class App {
       height: document.documentElement.clientHeight,
     }, d.config)
 
+    this._renderSettingControls(d)
     this.layout.p = layoutSet
   }
 
@@ -172,6 +174,7 @@ class App {
     this.template = template
     this.render()
   }
+
 
   prepereDataForForceLayout () {
     const _data = _.cloneDeep(this.data)
@@ -192,6 +195,62 @@ class App {
     })
 
     return { items: this.data, edges: links }
+
+  _renderSettingControls (settings) {
+    if(d3Selection.select('#config').nodes().length)
+      d3Selection.select('#config').remove()
+
+    d3Selection.select('.switcher')
+      .append('div')
+      .attr('id', 'config')
+      .append('h5')
+      .html(settings.name)
+
+    const config = settings.config
+    const container = d3Selection.select('#config')
+    container.on('change', this.changeConfig.bind(this))
+
+    _.each(config, (value, key) => {
+      if(_.isObject(value)){
+        const control = container.append('div')
+        this._renderLabelControl(control, key)
+        _.each(value, (sub_value, sub_key) => {
+          const sub_control = control.append('div')
+          this._renderLabelControl(sub_control, sub_key)
+          this._renderSettingControl (sub_control, `${key}.${sub_key}`, sub_value)
+        })
+      } else {
+        const control = container.append('div')
+        this._renderLabelControl(control, key)
+        this._renderSettingControl (control, key, value)
+      }
+    })
+
+  }
+
+  changeConfig () {
+    const key = event.target.dataset.key.split('.')
+    const value = event.target.value
+    if(key[1]) {
+      this.layout.p[key[0]][key[1]] = value
+    } else {
+      this.layout.p[key[0]] = value
+    }
+
+    console.log('change config')
+  }
+
+  _renderSettingControl (control, key, value) {
+    control.append('input')
+      .attr('type', 'number')
+      .attr('min', 0)
+      .attr('value', value)
+      .attr('data-key', key)
+  }
+
+  _renderLabelControl(control, key) {
+    control.append('label')
+      .html(key)
   }
 }
 new App() // eslint-disable-line
