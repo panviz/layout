@@ -1,12 +1,13 @@
 {
-  "name": "Graphiy.layout",
+  "name": "@graphiy/layout",
   "version": "0.0.2",
   "description": "Layouts",
   "keywords": [
     "data visualization",
     "layout algorythm"
   ],
-  "homepage": "",
+
+  "homepage": "https://github.com/graphiy/layout#readme",
   "license": "GPL-3.0+",
   "main": "build/bundle.js",
   "module": "index",
@@ -18,7 +19,8 @@
     "build": "webpack",
     "lint": "eslint . --ignore-path .gitignore",
     "start": "webpack-dev-server --port 8007",
-    "test": "yarn lint"
+    "pretest": "yarn lint",
+    "test": "jest test/"
   },
   "babel": {
     "presets": [
@@ -28,11 +30,23 @@
           "targets": {
             "browsers": [
               "last 2 versions"
-            ]
+            ],
+            "node": "current"
           }
         }
       ]
     ]
+  },
+  "eslintConfig": {
+    "env": {
+      "mocha": true,
+      "browser": true
+    },
+    "extends": "@graphiy/eslint-config",
+    "globals": {
+      "_": true,
+      "$": true
+    }
   },
   "dependencies": {
     "d3-force": "^1.0.6",
@@ -40,6 +54,7 @@
     "webcola": "^3.3.6"
   },
   "devDependencies": {
+    "@graphiy/eslint-config": "graphiy/eslint-config",
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.6.0",
     "css-loader": "^0.28.4",
@@ -48,10 +63,9 @@
     "d3-selection": "^1.1.0",
     "d3-transition": "^1.1.0",
     "eslint": "^4.6.0",
-    "eslint-config-graphiy": "Graphiy/javascript",
     "extract-text-webpack-plugin": "2.1.2",
+    "jest": "^21.2.1",
     "jquery": "^3.2.1",
-    "mocha": "^3.5.0",
     "node-sass": "^4.5.3",
     "raw-loader": "^0.5.1",
     "sass-loader": "^6.0.6",

@@ -5,6 +5,8 @@ import * as d3Ease from 'd3-ease'
 
 import Grid from '../src/grid'
 import Force from '../src/force'
+import Radial from '../src/radial'
+
 import rawData from './data.csv'
 
 import './template/node.scss'
@@ -18,7 +20,8 @@ class App {
     this.container = d3Selection.select('#container')
     this.data = d3Csv.csvParse(rawData)
     this.templates = ['row', 'tile', 'circle']
-    const Layouts = [Grid, Force]
+
+    const Layouts = [Grid, Radial, Force]
 
     this.layouts = _.map(Layouts, (L) => {
       const instance = new L()

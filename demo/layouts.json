@@ -3,14 +3,19 @@
     "name": "Grid",
     "type": "Grid",
     "config": {
-      "node": { "width": 200, "height": 200 }
+      "node": {
+        "width": 200,
+        "height": 200
+      }
     }
   },
   "list": {
     "name": "List",
     "type": "Grid",
     "config": {
-      "node": { "height": 20 },
+      "node": {
+        "height": 20
+      },
       "columns": 1
     }
   },
@@ -18,8 +23,22 @@
     "name": "Force",
     "type": "Force",
     "config": {
-      "node": { "width": 20, "height": 20 },
+      "node": {
+        "width": 20,
+        "height": 20
+      },
       "distance": 50
+    }
+  },
+  "radial": {
+    "name": "Radial",
+    "type": "Radial",
+    "config":  {
+      "radius": 300,
+      "spacing": 30,
+      "node": { "width": 20, "height": 20 },
+      "center": { "x": 450, "y": 350},
+      "startRadian": 0
     }
   }
 }
