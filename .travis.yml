@@ -5,4 +5,4 @@ node_js:
 install:
   - yarn install
 script:
-  - NODE_ENV=TEST yarn test
+  - yarn test
