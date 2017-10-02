@@ -216,8 +216,9 @@ class App {
       if (_.isObject(value)) {
         this.controlContainer = container.append('div')
         this._renderLabelControl(key)
+        const pControlContainer = this.controlContainer
         _.each(value, (subValue, subKey) => {
-          this.controlContainer = this.controlContainer.append('div')
+          this.controlContainer = pControlContainer.append('div')
           this._renderLabelControl(subKey)
           this._renderSettingControl(`${key}.${subKey}`, subValue)
         })
