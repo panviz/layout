@@ -53,14 +53,14 @@ class App {
       .data(_.values(layoutSets))
       .enter()
       .append('button')
-      .html(d => `Layout ${d.name}`)
+      .html(d => d.name)
       .attr('class', d => d.name)
       .on('click', this.changeLayout.bind(this))
     d3Selection.select('.template').selectAll('button')
       .data(this.templates)
       .enter()
       .append('button')
-      .html(d => `Template ${d}`)
+      .html(d => d)
       .attr('class', d => d)
       .on('click', this.changeTemplate.bind(this))
   }
@@ -87,17 +87,26 @@ class App {
     if (this.layout.constructor.name === 'Force') {
       let svg = this.container.select('svg')
       if (!svg.nodes().length) {
-        svg = this._initialize()
+        svg = this._initializeLine()
       }
       this._updateLinePosition(svg)
+      const nodeRect = d3Selection.select('.node').node().getBoundingClientRect()
+      const nodeWidth = nodeRect.width
+      const nodeHeight = nodeRect.height
+
+      _.each(nodes, (node, i) => {
+        const coord = coords[i]
+        $(node).css({ transform: `translate(${coord.x - (nodeWidth / 2)}px, ${coord.y - (nodeHeight / 2)}px)` })
+      })
+    } else {
+      _.each(nodes, (node, i) => {
+        const coord = coords[i]
+        $(node).css({ transform: `translate(${coord.x}px, ${coord.y}px)` })
+      })
     }
-    _.each(nodes, (node, i) => {
-      const coord = coords[i]
-      $(node).css({ transform: `translate(${coord.x}px, ${coord.y}px)` })
-    })
   }
 
-  _initialize () {
+  _initializeLine () {
     const startLinksPosition = this._calcStartLinksPosition()
     const svg = this.container.append('svg')
       .attr('width', this.container.node().getBoundingClientRect().width)
@@ -130,6 +139,7 @@ class App {
       .attr('x2', d => d.x2)
       .attr('y2', d => d.y2)
   }
+
   _calcStartLinksPosition () {
     const coords = []
     const items = d3Selection.selectAll('.node')
@@ -160,6 +170,7 @@ class App {
     const layoutSet = _.extend({
       width: this.container.node().getBoundingClientRect().width,
       height: document.documentElement.clientHeight,
+      name: d.name,
     }, d.config)
 
     this._renderSettingControls(d)
@@ -210,7 +221,7 @@ class App {
 
     const config = settings.config
     const container = d3Selection.select('#config')
-    container.on('change', this.changeConfig.bind(this))
+    container.on('input', this.changeConfig.bind(this))
 
     _.each(config, (value, key) => {
       if (_.isObject(value)) {
@@ -232,7 +243,7 @@ class App {
 
   changeConfig () {
     const key = event.target.dataset.key.split('.')
-    const value = event.target.value
+    const value = +event.target.value
     if (key[1]) {
       this.layout.p[key[0]][key[1]] = value
     } else {

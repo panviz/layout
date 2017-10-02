@@ -15,18 +15,14 @@
     "config": {
       "cell": {
         "height": 20
-      },
-      "columns": 1
+      }
     }
   },
   "force": {
     "name": "Force",
     "type": "Force",
     "config": {
-      "node": {
-        "width": 20,
-        "height": 20
-      },
+
       "distance": 50
     }
   },
@@ -36,8 +32,7 @@
     "config":  {
       "radius": 300,
       "spacing": 30,
-      "node": { "width": 20, "height": 20 },
-      "center": { "x": 450, "y": 350},
+      "center": { "x": 450, "y": 349},
       "startRadian": 0
     }
   }

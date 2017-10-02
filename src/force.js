@@ -43,10 +43,10 @@ export default class Force extends Layout {
 
     _.each(this.nodes.edges, (edge, i) => {
       linksCoords[i] = {
-        x1: edge.source.x + (this.p.node.width / 2),
-        y1: edge.source.y + (this.p.node.height / 2),
-        x2: edge.target.x + (this.p.node.width / 2),
-        y2: edge.target.y + (this.p.node.height / 2),
+        x1: edge.source.x,
+        y1: edge.source.y,
+        x2: edge.target.x,
+        y2: edge.target.y,
       }
     })
 

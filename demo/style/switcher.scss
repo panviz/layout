@@ -2,7 +2,7 @@
   button {
     width: 110px;
     height: 25px;
-    border-radius: 0px;
+    border-radius: 0;
   }
   button.active {
     background-color: burlywood;
@@ -12,6 +12,7 @@
 
   #config {
     display: inline-grid;
+    padding: 5px;
     position: absolute;
     top: 0;
     right: 0;

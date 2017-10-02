@@ -22,7 +22,7 @@ export default class Grid extends Layout {
     const cellWidth = this.p.cell.width || 0
     const cellHeight = this.p.cell.height
 
-    const columns = this.p.columns || this._calculateColumns()
+    const columns = this.p.name === 'List' ? 1 : this._calculateColumns()
     let column = 0
     let line = 0
 
