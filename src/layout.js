@@ -14,7 +14,7 @@ export default class Layout extends EventEmitter {
     this.p = p
   }
 
-  set p (obj = {}) {
+  set p (obj) {
     const p = _.clone(obj)
     _.defaultsDeep(p, this.constructor.defaults)
     this._p = new Config(p, this.run.bind(this))
