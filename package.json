@@ -1,12 +1,11 @@
 {
   "name": "@graphiy/layout",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Layouts",
   "keywords": [
     "data visualization",
     "layout algorythm"
   ],
-
   "homepage": "https://github.com/graphiy/layout#readme",
   "license": "GPL-3.0+",
   "main": "build/bundle.js",
