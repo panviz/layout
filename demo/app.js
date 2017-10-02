@@ -195,6 +195,7 @@ class App {
     })
 
     return { items: this.data, edges: links }
+  }
 
   _renderSettingControls (settings) {
     if(d3Selection.select('#config').nodes().length)

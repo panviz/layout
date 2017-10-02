@@ -3,7 +3,7 @@
     "name": "Grid",
     "type": "Grid",
     "config": {
-      "node": {
+      "cell": {
         "width": 200,
         "height": 200
       }
@@ -13,7 +13,7 @@
     "name": "List",
     "type": "Grid",
     "config": {
-      "node": {
+      "cell": {
         "height": 20
       },
       "columns": 1
