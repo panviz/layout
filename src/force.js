@@ -32,8 +32,8 @@ export default class Force extends Layout {
   }
 
   _getCoords () {
-    const coords = this.coords
-    const linksCoords = this.linksCoords
+    const coords = []
+    const linksCoords = []
 
     _.each(this.nodes.items, (node, i) => {
       const x = node.x
@@ -49,7 +49,8 @@ export default class Force extends Layout {
         y2: edge.target.y,
       }
     })
-
+    this.coords = coords
+    this.linksCoords = linksCoords
     super.run()
   }
 

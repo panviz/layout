@@ -15,7 +15,6 @@ import './template/tile.scss'
 import './template/circle.scss'
 import './style/switcher.scss'
 
-
 import layoutSets from './layouts.json'
 
 class App {
@@ -87,27 +86,37 @@ class App {
   changeData () {
     const limit = d3Selection.select('#limit').nodes()[0].value
     this.data = _.slice(this.fullData, 0, limit)
+
     _.each(this.layouts, (layout) => {
-      layout.update(this.data)
+      if (layout.constructor.name === 'Force') {
+        const data = this.prepereDataForForceLayout()
+        layout.update(data)
+      } else {
+        layout.update(this.data)
+      }
     })
     this.render()
-    setTimeout(() => {
-      this.updatePosition()
-    })
+    this.layout.run()
+
+
+
     d3Selection.select('.slider h5')
       .html(`limit data array length ${limit}`)
   }
+
   render () {
-    this.nodes = this.container.selectAll('.node').data(this.data, d => d.id)
-    this.nodes.enter()
+    const nodes = this.container.selectAll('.node').data(this.data, d => d.id)
+    nodes.enter()
       .append('div')
       .style('background', d => d.id)
+      .style('transform', 'translate(0px, 0px)')
       .html(d => d.id)
-      .merge(this.nodes)
+      .merge(nodes)
       .attr('class', 'node')
+
       .classed(this.template, true)
 
-    this.nodes.exit()
+    nodes.exit()
       .remove()
   }
 
@@ -120,11 +129,11 @@ class App {
     }
 
     if (this.layout.constructor.name === 'Force') {
-      let svg = this.container.select('svg')
-      if (!svg.nodes().length) {
-        svg = this._initializeLine()
+      const line = this.container.selectAll('line')
+      if (line !== this.layout.nodes.edges.length) {
+        this._initializeLine()
       }
-      this._updateLinePosition(svg)
+      this._updateLinePosition()
       const nodeRect = d3Selection.select('.node').node().getBoundingClientRect()
       const nodeWidth = nodeRect.width
       const nodeHeight = nodeRect.height
@@ -143,11 +152,14 @@ class App {
 
   _initializeLine () {
     const startLinksPosition = this._calcStartLinksPosition()
-    const svg = this.container.append('svg')
-      .attr('width', this.container.node().getBoundingClientRect().width)
-      .attr('height', document.documentElement.clientHeight)
+    this.svg = d3Selection.select('svg')
+    if (!this.svg.nodes().length) {
+      this.svg = this.container.append('svg')
+        .attr('width', this.container.node().getBoundingClientRect().width)
+        .attr('height', document.documentElement.clientHeight)
+    }
 
-    svg.selectAll('line')
+    this.svg.selectAll('line')
       .data(startLinksPosition)
       .enter()
       .append('line')
@@ -158,14 +170,25 @@ class App {
       .attr('stroke-width', 1)
       .attr('stroke', 'black')
 
-    return svg
+
   }
 
-  _updateLinePosition (svg) {
+  _updateLinePosition () {
     const linksCoords = this.layout.linksCoords
 
-    svg.selectAll('line')
+    const line = this.svg.selectAll('line')
       .data(linksCoords)
+
+    line.transition()
+      .ease(d3Ease.easeLinear)
+      .duration(750)
+      .attr('x1', d => d.x1)
+      .attr('y1', d => d.y1)
+      .attr('x2', d => d.x2)
+      .attr('y2', d => d.y2)
+
+    line.enter()
+      .append('line')
       .transition()
       .ease(d3Ease.easeLinear)
       .duration(750)
@@ -173,6 +196,9 @@ class App {
       .attr('y1', d => d.y1)
       .attr('x2', d => d.x2)
       .attr('y2', d => d.y2)
+
+    line.exit()
+      .remove()
   }
 
   _calcStartLinksPosition () {
@@ -221,7 +247,6 @@ class App {
     this.render()
   }
 
-
   prepereDataForForceLayout () {
     const _data = _.cloneDeep(this.data)
     const source = {}
@@ -235,8 +260,10 @@ class App {
     _.each(_data, (node, i) => {
       if (node) {
         const sourceIndex = source[node.group]
-        const targetIndex = i
-        links.push({ source: sourceIndex, target: targetIndex })
+        if (sourceIndex !== undefined) {
+          const targetIndex = i
+          links.push({ source: sourceIndex, target: targetIndex })
+        }
       }
     })
 
