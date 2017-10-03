@@ -21,7 +21,8 @@ import layoutSets from './layouts.json'
 class App {
   constructor () {
     this.container = d3Selection.select('#container')
-    this.data = d3Csv.csvParse(rawData)
+    this.fullData = d3Csv.csvParse(rawData)
+    this.data = this.fullData
     this.templates = ['row', 'tile', 'circle']
 
     const Layouts = [Grid, Radial, Force]
@@ -38,6 +39,7 @@ class App {
     })
 
     this.renderControls()
+    this.initSlider()
     this.changeTemplate('circle')
     this.changeLayout(layoutSets.list)
 
@@ -65,6 +67,36 @@ class App {
       .on('click', this.changeTemplate.bind(this))
   }
 
+  initSlider () {
+    const maxLength = this.fullData.length
+    d3Selection.select('.slider')
+      .append('h5')
+      .html(`limit data array length ${maxLength}`)
+
+    d3Selection.select('.slider')
+      .append('input')
+      .attr('id', 'limit')
+      .attr('type', 'range')
+      .attr('min', 1)
+      .attr('max', maxLength)
+      .attr('step', 1)
+      .attr('value', maxLength)
+      .on('change', this.changeData.bind(this))
+  }
+
+  changeData () {
+    const limit = d3Selection.select('#limit').nodes()[0].value
+    this.data = _.slice(this.fullData, 0, limit)
+    _.each(this.layouts, (layout) => {
+      layout.update(this.data)
+    })
+    this.render()
+    setTimeout(() => {
+      this.updatePosition()
+    })
+    d3Selection.select('.slider h5')
+      .html(`limit data array length ${limit}`)
+  }
   render () {
     this.nodes = this.container.selectAll('.node').data(this.data, d => d.id)
     this.nodes.enter()
@@ -74,6 +106,9 @@ class App {
       .merge(this.nodes)
       .attr('class', 'node')
       .classed(this.template, true)
+
+    this.nodes.exit()
+      .remove()
   }
 
   updatePosition () {
