@@ -12,7 +12,8 @@ export default class Force extends Layout {
   constructor (p = {}) {
     super(p)
     this.edges = []
-    this.linksCoords = []
+    this.coords = []
+    this.edgesCoords = []
   }
 
   set links (value) {
@@ -28,7 +29,6 @@ export default class Force extends Layout {
    */
   run () {
     if (_.isEmpty(this.nodes)) return
-    this._initPosition()
 
     d3Force.forceSimulation(this.nodes)
       .force('link', d3Force.forceLink(this.links).distance(this.p.distance))
@@ -43,7 +43,7 @@ export default class Force extends Layout {
 
   _getCoords () {
     const coords = []
-    const linksCoords = []
+    const edgesCoords = []
 
     _.each(this.nodes, (node, i) => {
       const x = node.x
@@ -52,7 +52,7 @@ export default class Force extends Layout {
     })
 
     _.each(this.links, (edge, i) => {
-      linksCoords[i] = {
+      edgesCoords[i] = {
         x1: edge.source.x,
         y1: edge.source.y,
         x2: edge.target.x,
@@ -60,16 +60,7 @@ export default class Force extends Layout {
       }
     })
     this.coords = coords
-    this.linksCoords = linksCoords
+    this.edgesCoords = edgesCoords
     super.run()
-  }
-
-  _initPosition () {
-    const x = this.p.width / 2
-    const y = this.p.height / 2
-    _.each(this.nodes, (node, i) => {
-      node.x = x
-      node.y = y
-    })
   }
 }

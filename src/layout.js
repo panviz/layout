@@ -22,6 +22,9 @@ export default class Layout extends EventEmitter {
   }
 
   get p () { return this._p }
+
+  get name () { return this.constructor.name }
+
   /**
    *
    */

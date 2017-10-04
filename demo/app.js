@@ -28,7 +28,7 @@ class App {
 
     this.layouts = _.map(Layouts, (L) => {
       const instance = new L()
-      if (instance.constructor.name === 'Force') {
+      if (instance.name === 'Force') {
         const links = this.prepereLinksForForceLayout()
         instance.update(this.data)
         instance.links = links
@@ -89,9 +89,10 @@ class App {
     this.data = _.slice(this.fullData, 0, limit)
 
     _.each(this.layouts, (layout) => {
-      if (layout.constructor.name === 'Force') {
-        const data = this.prepereDataForForceLayout()
-        layout.update(data)
+      if (layout.name === 'Force') {
+        const links = this.prepereLinksForForceLayout()
+        layout.update(this.data)
+        layout.links = links
       } else {
         layout.update(this.data)
       }
@@ -112,7 +113,6 @@ class App {
       .html(d => d.id)
       .merge(nodes)
       .attr('class', 'node')
-
       .classed(this.template, true)
 
     nodes.exit()
@@ -123,11 +123,11 @@ class App {
     const coords = this.layout.coords
     const nodes = $('.node')
 
-    if (this.container.selectAll('svg').nodes().length && this.layout.constructor.name !== 'Force') {
+    if (this.container.selectAll('svg').nodes().length && this.layout.name !== 'Force') {
       this.container.selectAll('svg').remove()
     }
 
-    if (this.layout.constructor.name === 'Force') {
+    if (this.layout.name === 'Force') {
       const line = this.container.selectAll('line')
       if (line !== this.layout.links.length) {
         this._initializeLine()
@@ -171,10 +171,10 @@ class App {
   }
 
   _updateLinePosition () {
-    const linksCoords = this.layout.linksCoords
+    const edgesCoords = this.layout.edgesCoords
 
     const line = this.svg.selectAll('line')
-      .data(linksCoords)
+      .data(edgesCoords)
 
     line.transition()
       .ease(d3Ease.easeLinear)
@@ -198,6 +198,25 @@ class App {
       .remove()
   }
 
+  static getNodePosition () {
+    const coords = []
+    const nodes = d3Selection.selectAll('.node')
+    _.each(nodes.nodes(), (node, i) => {
+      const position = node.style.transform.slice(10, -1).split(',')
+      coords[i] = { x: parseFloat(position[0]), y: parseFloat(position[1]) }
+    })
+    return coords
+  }
+
+
+  nodeInitPosition (coords) {
+    if (coords.length !== this.layout.nodes.length) return
+    _.each(this.layout.nodes, (node, i) => {
+      node.x = coords[i].x
+      node.y = coords[i].y
+    })
+  }
+
   _calcStartLinksPosition () {
     const coords = []
     const items = d3Selection.selectAll('.node')
@@ -218,7 +237,14 @@ class App {
   }
 
   changeLayout (d) {
-    if (this.layout) this.layout.off('end')
+    let prevLayout
+    const containerWidth = this.container.node().getBoundingClientRect().width
+    const containerHeight = document.documentElement.clientHeight
+    if (this.layout) {
+      this.layout.off('end')
+      prevLayout = this.layout
+    }
+
     this.layout = this.layouts.find(l => l.constructor.name === d.type)
     this.layout.on('end', this.updatePosition.bind(this))
     d3Selection.selectAll('.layout button')
@@ -226,12 +252,23 @@ class App {
     d3Selection.select(`.${d.name}`)
       .classed('active', true)
     const layoutSet = _.extend({
-      width: this.container.node().getBoundingClientRect().width,
-      height: document.documentElement.clientHeight,
+      width: containerWidth,
+      height: containerHeight,
       name: d.name,
     }, d.config)
 
     this._renderSettingControls(d)
+
+    if (this.layout.name === 'Force') {
+      if (!prevLayout || prevLayout.name !== 'Force') {
+        const length = d3Selection.selectAll('.node').nodes().length
+        const coords = _.fill(Array(length), { x: containerWidth / 2, y: containerHeight / 2 })
+        this.nodeInitPosition(coords)
+      } else {
+        const coords = App.getNodePosition()
+        this.nodeInitPosition(coords)
+      }
+    }
     this.layout.p = layoutSet
   }
 
@@ -301,8 +338,8 @@ class App {
   }
 
   changeConfig () {
-    const key = event.target.dataset.key.split('.')
-    const value = +event.target.value
+    const key = event.target.dataset.key.split('.') // eslint-disable-line
+    const value = +event.target.value // eslint-disable-line
     if (key[1]) {
       this.layout.p[key[0]][key[1]] = value
     } else {
