@@ -29,8 +29,9 @@ class App {
     this.layouts = _.map(Layouts, (L) => {
       const instance = new L()
       if (instance.constructor.name === 'Force') {
-        const data = this.prepereDataForForceLayout()
-        instance.update(data)
+        const links = this.prepereLinksForForceLayout()
+        instance.update(this.data)
+        instance.links = links
       } else {
         instance.update(this.data)
       }
@@ -40,7 +41,7 @@ class App {
     this.renderControls()
     this.initSlider()
     this.changeTemplate('circle')
-    this.changeLayout(layoutSets.list)
+    this.changeLayout(layoutSets.force)
 
     $(window).on('resize', this.resize.bind(this))
   }
@@ -98,8 +99,6 @@ class App {
     this.render()
     this.layout.run()
 
-
-
     d3Selection.select('.slider h5')
       .html(`limit data array length ${limit}`)
   }
@@ -130,7 +129,7 @@ class App {
 
     if (this.layout.constructor.name === 'Force') {
       const line = this.container.selectAll('line')
-      if (line !== this.layout.nodes.edges.length) {
+      if (line !== this.layout.links.length) {
         this._initializeLine()
       }
       this._updateLinePosition()
@@ -169,8 +168,6 @@ class App {
       .attr('y2', d => d.y2)
       .attr('stroke-width', 1)
       .attr('stroke', 'black')
-
-
   }
 
   _updateLinePosition () {
@@ -204,7 +201,7 @@ class App {
   _calcStartLinksPosition () {
     const coords = []
     const items = d3Selection.selectAll('.node')
-    const links = this.layout.nodes.edges
+    const links = this.layout.links
     _.each(links, (link, i) => {
       let source = items.nodes()[link.source.index].style.transform.slice(10, -1)
       let target = items.nodes()[link.target.index].style.transform.slice(10, -1)
@@ -247,7 +244,7 @@ class App {
     this.render()
   }
 
-  prepereDataForForceLayout () {
+  prepereLinksForForceLayout () {
     const _data = _.cloneDeep(this.data)
     const source = {}
     const links = []
@@ -267,7 +264,7 @@ class App {
       }
     })
 
-    return { items: this.data, edges: links }
+    return links
   }
 
   _renderSettingControls (settings) {
