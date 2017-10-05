@@ -358,7 +358,7 @@ class App {
   _renderSettingControl (key, value) {
     const width = this.container.node().getBoundingClientRect().width
     const height = document.documentElement.clientHeight - this.container.node().offsetTop
-    const type = this._getControlType(key)
+    const type = App._getControlType(key)
     const input = this.controlContainer.append('input')
       .attr('type', type)
       .attr('data-key', key)
@@ -380,7 +380,7 @@ class App {
     }
   }
 
-  _getControlType(key) {
+  static _getControlType (key) {
     switch (key) {
     case 'startRadian':
     case 'center.x':
