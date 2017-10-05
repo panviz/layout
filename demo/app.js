@@ -14,6 +14,7 @@ import './template/row.scss'
 import './template/tile.scss'
 import './template/circle.scss'
 import './style/switcher.scss'
+import './style/app.scss'
 
 import layoutSets from './layouts.json'
 
@@ -41,7 +42,7 @@ class App {
     this.renderControls()
     this.initSlider()
     this.changeTemplate('circle')
-    this.changeLayout(layoutSets.force)
+    this.changeLayout(layoutSets.radial)
 
     $(window).on('resize', this.resize.bind(this))
   }
@@ -81,7 +82,7 @@ class App {
       .attr('max', maxLength)
       .attr('step', 1)
       .attr('value', maxLength)
-      .on('change', this.changeData.bind(this))
+      .on('input', this.changeData.bind(this))
   }
 
   changeData () {
@@ -106,14 +107,15 @@ class App {
 
   render () {
     const nodes = this.container.selectAll('.node').data(this.data, d => d.id)
+    nodes.attr('class', 'node').classed(this.template, true)
     nodes.enter()
       .append('div')
       .style('background', d => d.id)
       .style('transform', 'translate(0px, 0px)')
-      .html(d => d.id)
-      .merge(nodes)
       .attr('class', 'node')
       .classed(this.template, true)
+      .append('div')
+      .html(d => d.id)
 
     nodes.exit()
       .remove()
@@ -309,14 +311,13 @@ class App {
       d3Selection.select('#config').remove()
     }
 
-    d3Selection.select('.switcher')
+    const container = d3Selection.select('.switcher')
       .append('div')
       .attr('id', 'config')
       .append('h5')
       .html(settings.name)
 
     const config = settings.config
-    const container = d3Selection.select('#config')
     container.on('input', this.changeConfig.bind(this))
 
     _.each(config, (value, key) => {
@@ -339,7 +340,14 @@ class App {
 
   changeConfig () {
     const key = event.target.dataset.key.split('.') // eslint-disable-line
-    const value = +event.target.value // eslint-disable-line
+    let value = +event.target.value // eslint-disable-line
+    switch (key[0]) {
+    case 'startRadian':
+      value *= (Math.PI / 180)
+      break
+    default:
+    }
+
     if (key[1]) {
       this.layout.p[key[0]][key[1]] = value
     } else {
@@ -348,16 +356,52 @@ class App {
   }
 
   _renderSettingControl (key, value) {
-    this.controlContainer.append('input')
-      .attr('type', 'number')
-      .attr('min', 0)
-      .attr('value', value)
+    const width = this.container.node().getBoundingClientRect().width
+    const height = document.documentElement.clientHeight - this.container.node().offsetTop
+    const type = this._getControlType(key)
+    const input = this.controlContainer.append('input')
+      .attr('type', type)
       .attr('data-key', key)
+      .attr('value', value)
+      .attr('step', 1)
+      .attr('min', 0)
+
+    switch (key) {
+    case 'startRadian':
+      input.attr('max', 360)
+      break
+    case 'center.x':
+      input.attr('max', width)
+      break
+    case 'center.y':
+      input.attr('max', height)
+      break
+    default:
+    }
+  }
+
+  _getControlType(key) {
+    switch (key) {
+    case 'startRadian':
+    case 'center.x':
+    case 'center.y':
+      return 'range'
+    default:
+      return 'number'
+    }
   }
 
   _renderLabelControl (key) {
+    let label
+    switch (key) {
+    case 'startRadian':
+      label = 'start degree'
+      break
+    default:
+      label = key
+    }
     this.controlContainer.append('label')
-      .html(key)
+      .html(label)
   }
 }
 new App() // eslint-disable-line
