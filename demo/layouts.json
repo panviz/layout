@@ -6,7 +6,12 @@
       "cell": {
         "width": 100,
         "height": 100
-      }
+      },
+      "offset": {
+        "x": 10,
+        "y": 10
+      },
+      "width": 500
     }
   },
   "list": {
@@ -15,14 +20,15 @@
     "config": {
       "cell": {
         "height": 20
-      }
+      },
+      "columns": 1,
+      "height": 300
     }
   },
   "force": {
     "name": "Force",
     "type": "Force",
     "config": {
-
       "distance": 50
     }
   },

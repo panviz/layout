@@ -210,7 +210,6 @@ class App {
     return coords
   }
 
-
   nodeInitPosition (coords) {
     if (coords.length !== this.layout.nodes.length) return
     _.each(this.layout.nodes, (node, i) => {
@@ -253,11 +252,6 @@ class App {
       .classed('active', false)
     d3Selection.select(`.${d.name}`)
       .classed('active', true)
-    const layoutSet = _.extend({
-      width: containerWidth,
-      height: containerHeight,
-      name: d.name,
-    }, d.config)
 
     this._renderSettingControls(d)
 
@@ -271,7 +265,7 @@ class App {
         this.nodeInitPosition(coords)
       }
     }
-    this.layout.p = layoutSet
+    this.layout.p = d.config
   }
 
   changeTemplate (template) {
@@ -317,6 +311,7 @@ class App {
       .append('h5')
       .html(settings.name)
 
+    const layoutName = settings.name
     const config = settings.config
     container.on('input', this.changeConfig.bind(this))
 
@@ -330,7 +325,7 @@ class App {
           this._renderLabelControl(subKey)
           this._renderSettingControl(`${key}.${subKey}`, subValue)
         })
-      } else {
+      } else if (layoutName !== 'List' && (key !== 'height' || key !== 'width')) {
         this.controlContainer = container.append('div')
         this._renderLabelControl(key)
         this._renderSettingControl(key, value)
