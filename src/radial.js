@@ -18,7 +18,7 @@ export default class Radial extends Layout {
 
   run () {
     if (_.isEmpty(this.nodes)) return
-    let spacing = this.p.spacing
+    const spacing = this.p.spacing
     let radius = this.p.radius
     let alpha = 0
 

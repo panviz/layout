@@ -32,24 +32,24 @@ export default class Grid extends Layout {
         this._getDefaultCoords()
       } else if (this.p.columns) {
         lines = this.p.columns
-        this._getCoords(lines)
+        this._getCoords(lines, 'column')
       } else {
         lines = this._calculateLines()
-        this._getCoords(lines, 'column')
+        this._getCoords(lines)
       }
     } else if (!this.p.height) {
       if ((!this.p.width && !this.p.columns) || this.p.columns === 0) {
         this._getDefaultCoords()
       } else if (this.p.columns) {
         columns = this.p.columns
-        this._getCoords(columns, 'column')
+        this._getCoords(columns)
       } else {
         columns = this.p.columns || this._calculateColumns()
-        this._getCoords(columns)
+        this._getCoords(columns, 'column')
       }
     } else {
-      columns = this.p.name === 'List' ? 1 : this._calculateColumns()
-      this._getCoords(columns)
+      columns = this.p.columns || this._calculateColumns()
+      this._getCoords(columns, 'column')
     }
     super.run()
   }
@@ -99,7 +99,6 @@ export default class Grid extends Layout {
   }
 
   _calculateLines () {
-    console.log(Math.floor((this.p.height - this.p.offset.y) / this.p.cell.height))
     return Math.floor((this.p.height - this.p.offset.y) / this.p.cell.height)
   }
 }

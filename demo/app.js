@@ -27,8 +27,8 @@ class App {
 
     const Layouts = [Grid, Radial, Force]
 
-    this.layouts = _.map(Layouts, (L) => {
-      const instance = new L()
+    this.layouts = _.map(Layouts, (Layout) => {
+      const instance = new Layout()
       if (instance.name === 'Force') {
         const links = this.prepereLinksForForceLayout()
         instance.update(this.data)
@@ -41,14 +41,35 @@ class App {
 
     this.renderControls()
     this.initSlider()
-    this.changeTemplate('circle')
-    this.changeLayout(layoutSets.radial)
+    this.containerWidth = this.container.node().getBoundingClientRect().width
+    this.containerHeight = document.documentElement.clientHeight - this.container.node().offsetTop
 
-    $(window).on('resize', this.resize.bind(this))
+    this.changeTemplate('circle')
+    this.changeLayout(layoutSets.grid)
+
+    $(window).on('resize', this.onResize.bind(this))
   }
 
-  resize () {
-    this.layout.p.width = this.container.node().getBoundingClientRect().width
+  prepereLinksForForceLayout () {
+    const _data = _.cloneDeep(this.data)
+    const source = {}
+    const links = []
+    _.each(_data, (node, i) => {
+      if (node.id === node.group) {
+        source[node.group] = i
+        delete _data[i]
+      }
+    })
+    _.each(_data, (node, i) => {
+      if (node) {
+        const sourceIndex = source[node.group]
+        if (sourceIndex !== undefined) {
+          links.push({ source: sourceIndex, target: i })
+        }
+      }
+    })
+
+    return links
   }
 
   renderControls () {
@@ -59,6 +80,7 @@ class App {
       .html(d => d.name)
       .attr('class', d => d.name)
       .on('click', this.changeLayout.bind(this))
+
     d3Selection.select('.template').selectAll('button')
       .data(this.templates)
       .enter()
@@ -85,6 +107,164 @@ class App {
       .on('input', this.changeData.bind(this))
   }
 
+  changeTemplate (template) {
+    d3Selection.selectAll('.template button')
+      .classed('active', false)
+    d3Selection.select(`.${template}`)
+      .classed('active', true)
+
+    this.template = template
+    this.render()
+  }
+
+  changeLayout (d) {
+    let prevLayout
+
+    if (this.layout) {
+      this.layout.off('end')
+      prevLayout = this.layout
+    }
+
+    this.layout = this.layouts.find(layout => layout.constructor.name === d.type)
+    this.layout.on('end', this.updatePosition.bind(this))
+
+    d3Selection.selectAll('.layout button')
+      .classed('active', false)
+    d3Selection.select(`.${d.name}`)
+      .classed('active', true)
+
+    let layoutSet = _.extend({}, d.config)
+
+    this._renderSettingControls(d)
+
+    if (this.layout.name === 'Force') {
+      if (!prevLayout || prevLayout.name !== 'Force') {
+        const coords = this._getCenterCoords()
+        this.nodeInitPosition(coords)
+      } else {
+        const coords = App.getNodePosition()
+        this.nodeInitPosition(coords)
+      }
+      layoutSet = _.extend({
+        width: this.containerWidth,
+        height: this.containerHeight,
+      }, layoutSet)
+    }
+    this.layout.p = layoutSet
+  }
+
+  _getCenterCoords () {
+    const length = d3Selection.selectAll('.node').nodes().length
+    return _.fill(Array(length), { x: this.containerWidth / 2, y: this.containerHeight / 2 })
+  }
+
+  updatePosition () {
+    const coords = this.layout.coords
+    const nodes = $('.node')
+
+    if (this.container.selectAll('svg').nodes().length && this.layout.name !== 'Force') {
+      this.container.selectAll('svg').remove()
+    }
+
+    if (this.layout.name === 'Force') {
+      const line = this.container.selectAll('line')
+      if (line !== this.layout.links.length) {
+        this._initializeLine()
+      }
+      this._updateLinePosition()
+
+      const nodeRect = d3Selection.select('.node').node().getBoundingClientRect()
+      const nodeWidth = nodeRect.width
+      const nodeHeight = nodeRect.height
+
+      _.each(nodes, (node, i) => {
+        const coord = coords[i]
+        $(node).css({ transform: `translate(${coord.x - (nodeWidth / 2)}px, ${coord.y - (nodeHeight / 2)}px)` })
+      })
+    } else {
+      _.each(nodes, (node, i) => {
+        const coord = coords[i]
+        $(node).css({ transform: `translate(${coord.x}px, ${coord.y}px)` })
+      })
+    }
+  }
+
+  _renderSettingControls (settings) {
+    if (d3Selection.select('#config').nodes().length) {
+      d3Selection.select('#config').remove()
+    }
+
+    const container = d3Selection.select('.switcher')
+      .append('div')
+      .attr('id', 'config')
+      .append('h5')
+      .html(settings.name)
+
+    const config = settings.config
+    container.on('input', this.changeConfig.bind(this))
+
+    _.each(config, (value, key) => {
+      if (_.isObject(value)) {
+        this.controlContainer = container.append('div')
+        this._renderLabelControl(key)
+        const pControlContainer = this.controlContainer
+        _.each(value, (subValue, subKey) => {
+          this.controlContainer = pControlContainer.append('div')
+          this._renderLabelControl(subKey)
+          this._renderSettingControl(`${key}.${subKey}`, subValue)
+        })
+      } else {
+        if (this.layout.name === 'Grid') {
+          if (config.width !== undefined && config.height !== undefined) {
+            if (key === 'height') return
+          }
+        }
+        this.controlContainer = container.append('div')
+        this._renderLabelControl(key)
+        this._renderSettingControl(key, value)
+      }
+    })
+  }
+
+  nodeInitPosition (coords) {
+    if (coords.length !== this.layout.nodes.length) return
+    _.each(this.layout.nodes, (node, i) => {
+      node.x = coords[i].x
+      node.y = coords[i].y
+    })
+  }
+
+  static getNodePosition () {
+    const coords = []
+    const nodes = d3Selection.selectAll('.node')
+    _.each(nodes.nodes(), (node, i) => {
+      const position = node.style.transform.slice(10, -1).split(',')
+      coords[i] = { x: parseFloat(position[0]), y: parseFloat(position[1]) }
+    })
+    return coords
+  }
+
+  render () {
+    const nodes = this.container.selectAll('.node').data(this.data, d => d.id)
+
+    nodes.attr('class', 'node').classed(this.template, true)
+
+    nodes.enter()
+      .append('div')
+      .style('background', d => d.id)
+      .style('transform', 'translate(0px, 0px)')
+      .attr('class', 'node')
+      .classed(this.template, true)
+      .append('div')
+      .html(d => d.id)
+
+    nodes.exit().remove()
+  }
+
+  onResize () {
+    this.layout.p.width = this.container.node().getBoundingClientRect().width
+  }
+
   changeData () {
     const limit = d3Selection.select('#limit').nodes()[0].value
     this.data = _.slice(this.fullData, 0, limit)
@@ -105,59 +285,13 @@ class App {
       .html(`limit data array length ${limit}`)
   }
 
-  render () {
-    const nodes = this.container.selectAll('.node').data(this.data, d => d.id)
-    nodes.attr('class', 'node').classed(this.template, true)
-    nodes.enter()
-      .append('div')
-      .style('background', d => d.id)
-      .style('transform', 'translate(0px, 0px)')
-      .attr('class', 'node')
-      .classed(this.template, true)
-      .append('div')
-      .html(d => d.id)
-
-    nodes.exit()
-      .remove()
-  }
-
-  updatePosition () {
-    const coords = this.layout.coords
-    const nodes = $('.node')
-
-    if (this.container.selectAll('svg').nodes().length && this.layout.name !== 'Force') {
-      this.container.selectAll('svg').remove()
-    }
-
-    if (this.layout.name === 'Force') {
-      const line = this.container.selectAll('line')
-      if (line !== this.layout.links.length) {
-        this._initializeLine()
-      }
-      this._updateLinePosition()
-      const nodeRect = d3Selection.select('.node').node().getBoundingClientRect()
-      const nodeWidth = nodeRect.width
-      const nodeHeight = nodeRect.height
-
-      _.each(nodes, (node, i) => {
-        const coord = coords[i]
-        $(node).css({ transform: `translate(${coord.x - (nodeWidth / 2)}px, ${coord.y - (nodeHeight / 2)}px)` })
-      })
-    } else {
-      _.each(nodes, (node, i) => {
-        const coord = coords[i]
-        $(node).css({ transform: `translate(${coord.x}px, ${coord.y}px)` })
-      })
-    }
-  }
-
   _initializeLine () {
     const startLinksPosition = this._calcStartLinksPosition()
     this.svg = d3Selection.select('svg')
     if (!this.svg.nodes().length) {
       this.svg = this.container.append('svg')
-        .attr('width', this.container.node().getBoundingClientRect().width)
-        .attr('height', document.documentElement.clientHeight)
+        .attr('width', this.containerWidth)
+        .attr('height', this.containerHeight)
     }
 
     this.svg.selectAll('line')
@@ -200,24 +334,6 @@ class App {
       .remove()
   }
 
-  static getNodePosition () {
-    const coords = []
-    const nodes = d3Selection.selectAll('.node')
-    _.each(nodes.nodes(), (node, i) => {
-      const position = node.style.transform.slice(10, -1).split(',')
-      coords[i] = { x: parseFloat(position[0]), y: parseFloat(position[1]) }
-    })
-    return coords
-  }
-
-  nodeInitPosition (coords) {
-    if (coords.length !== this.layout.nodes.length) return
-    _.each(this.layout.nodes, (node, i) => {
-      node.x = coords[i].x
-      node.y = coords[i].y
-    })
-  }
-
   _calcStartLinksPosition () {
     const coords = []
     const items = d3Selection.selectAll('.node')
@@ -237,105 +353,10 @@ class App {
     return coords
   }
 
-  changeLayout (d) {
-    let prevLayout
-    const containerWidth = this.container.node().getBoundingClientRect().width
-    const containerHeight = document.documentElement.clientHeight
-    if (this.layout) {
-      this.layout.off('end')
-      prevLayout = this.layout
-    }
-
-    this.layout = this.layouts.find(l => l.constructor.name === d.type)
-    this.layout.on('end', this.updatePosition.bind(this))
-    d3Selection.selectAll('.layout button')
-      .classed('active', false)
-    d3Selection.select(`.${d.name}`)
-      .classed('active', true)
-
-    this._renderSettingControls(d)
-
-    if (this.layout.name === 'Force') {
-      if (!prevLayout || prevLayout.name !== 'Force') {
-        const length = d3Selection.selectAll('.node').nodes().length
-        const coords = _.fill(Array(length), { x: containerWidth / 2, y: containerHeight / 2 })
-        this.nodeInitPosition(coords)
-      } else {
-        const coords = App.getNodePosition()
-        this.nodeInitPosition(coords)
-      }
-    }
-    this.layout.p = d.config
-  }
-
-  changeTemplate (template) {
-    d3Selection.selectAll('.template button')
-      .classed('active', false)
-    d3Selection.select(`.${template}`)
-      .classed('active', true)
-    this.template = template
-    this.render()
-  }
-
-  prepereLinksForForceLayout () {
-    const _data = _.cloneDeep(this.data)
-    const source = {}
-    const links = []
-    _.each(_data, (node, i) => {
-      if (node.id === node.group) {
-        source[node.group] = i
-        delete _data[i]
-      }
-    })
-    _.each(_data, (node, i) => {
-      if (node) {
-        const sourceIndex = source[node.group]
-        if (sourceIndex !== undefined) {
-          const targetIndex = i
-          links.push({ source: sourceIndex, target: targetIndex })
-        }
-      }
-    })
-
-    return links
-  }
-
-  _renderSettingControls (settings) {
-    if (d3Selection.select('#config').nodes().length) {
-      d3Selection.select('#config').remove()
-    }
-
-    const container = d3Selection.select('.switcher')
-      .append('div')
-      .attr('id', 'config')
-      .append('h5')
-      .html(settings.name)
-
-    const layoutName = settings.name
-    const config = settings.config
-    container.on('input', this.changeConfig.bind(this))
-
-    _.each(config, (value, key) => {
-      if (_.isObject(value)) {
-        this.controlContainer = container.append('div')
-        this._renderLabelControl(key)
-        const pControlContainer = this.controlContainer
-        _.each(value, (subValue, subKey) => {
-          this.controlContainer = pControlContainer.append('div')
-          this._renderLabelControl(subKey)
-          this._renderSettingControl(`${key}.${subKey}`, subValue)
-        })
-      } else if (layoutName !== 'List' && (key !== 'height' || key !== 'width')) {
-        this.controlContainer = container.append('div')
-        this._renderLabelControl(key)
-        this._renderSettingControl(key, value)
-      }
-    })
-  }
-
   changeConfig () {
     const key = event.target.dataset.key.split('.') // eslint-disable-line
     let value = +event.target.value // eslint-disable-line
+
     switch (key[0]) {
     case 'startRadian':
       value *= (Math.PI / 180)
@@ -351,8 +372,6 @@ class App {
   }
 
   _renderSettingControl (key, value) {
-    const width = this.container.node().getBoundingClientRect().width
-    const height = document.documentElement.clientHeight - this.container.node().offsetTop
     const type = App._getControlType(key)
     const input = this.controlContainer.append('input')
       .attr('type', type)
@@ -366,10 +385,10 @@ class App {
       input.attr('max', 360)
       break
     case 'center.x':
-      input.attr('max', width)
+      input.attr('max', this.containerWidth)
       break
     case 'center.y':
-      input.attr('max', height)
+      input.attr('max', this.containerHeight)
       break
     default:
     }
@@ -395,6 +414,7 @@ class App {
     default:
       label = key
     }
+
     this.controlContainer.append('label')
       .html(label)
   }

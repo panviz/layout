@@ -1,5 +1,6 @@
 .node {
   position: absolute;
+  z-index: 10;
   transition: 0.7s;
   transition-timing-function: linear;
 }
