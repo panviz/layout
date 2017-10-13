@@ -24,40 +24,45 @@ export default class Grid extends Layout {
   */
   run () {
     if (_.isEmpty(this.nodes)) return
-    let columns
-    let lines
+    this.columns = this.p.columns || 0
+    this.rows = this.p.rows || 0
+    this.width = this.p.width || 0
+    this.height = this.p.height || 0
+    const type = this._getType()
 
-    if (!this.p.width) {
-      if ((!this.p.height && !this.p.columns) || this.p.columns === 0) {
-        this._getDefaultCoords()
-      } else if (this.p.columns) {
-        lines = this.p.columns
-        this._getCoords(lines, 'column')
-      } else {
-        lines = this._calculateLines()
-        this._getCoords(lines)
+    switch (type) {
+    case ('Grid'):
+      if (this.width) {
+        this._getCoords(this._calculateColumns(), 'column')
+        break
       }
-    } else if (!this.p.height) {
-      if ((!this.p.width && !this.p.columns) || this.p.columns === 0) {
-        this._getDefaultCoords()
-      } else if (this.p.columns) {
-        columns = this.p.columns
-        this._getCoords(columns)
-      } else {
-        columns = this.p.columns || this._calculateColumns()
-        this._getCoords(columns, 'column')
+      this._getCoords(this._calculateRows())
+      break
+    case ('List'):
+      if (this.columns) {
+        this._getCoords(1, 'column')
+        break
       }
-    } else {
-      columns = this.p.columns || this._calculateColumns()
-      this._getCoords(columns, 'column')
+      this._getCoords(1)
+      break
+    case ('Table'):
+      if (this.columns) {
+        this._getCoords(this.columns, 'column')
+        break
+      }
+      this._getCoords(this.rows)
+      break
+    default:
+      this._getDefaultCoords()
     }
+
     super.run()
   }
 
   _getCoords (count, draw = 'row') {
     const coords = this.coords
-    const cellWidth = this.p.cell.width || this.p.cell.height || 0
-    const cellHeight = this.p.cell.height || this.p.cell.width || 0
+    const cellWidth = this.p.cell.width || 0
+    const cellHeight = this.p.cell.height || 0
     const offset = this.p.offset
     let i = 0
     let j = 0
@@ -94,11 +99,26 @@ export default class Grid extends Layout {
       this.coords[i] = { x, y }
     })
   }
+
   _calculateColumns () {
     return Math.floor((this.p.width - this.p.offset.x) / this.p.cell.width)
   }
 
-  _calculateLines () {
+  _calculateRows () {
     return Math.floor((this.p.height - this.p.offset.y) / this.p.cell.height)
+  }
+
+  _getType () {
+    let type
+    if (this.width || this.height) {
+      type = 'Grid'
+    } else if (this.columns === 1 || this.rows === 1) {
+      type = 'List'
+    } else if (this.columns > 1 || this.rows > 1) {
+      type = 'Table'
+    } else {
+      type = 'Default'
+    }
+    return type
   }
 }

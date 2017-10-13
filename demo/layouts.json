@@ -11,7 +11,8 @@
         "x": 10,
         "y": 10
       },
-      "width": 1000
+      "width": 500,
+      "height": 200
     }
   },
   "list": {
@@ -19,9 +20,23 @@
     "type": "Grid",
     "config": {
       "cell": {
-        "height": 20
+        "height": 20,
+        "width": 20
       },
-      "columns": 1
+      "columns": 1,
+      "rows": 1
+    }
+  },
+  "table": {
+    "name": "Table",
+    "type": "Grid",
+    "config": {
+      "cell": {
+        "height": 20,
+        "width": 20
+      },
+      "columns": 5,
+      "rows": 5
     }
   },
   "force": {

@@ -199,6 +199,12 @@ class App {
       .attr('id', 'config')
       .append('h5')
       .html(settings.name)
+    if (settings.name === 'Grid') {
+      container.append('p').html('width option priority by height')
+    }
+    if (settings.name === 'Table') {
+      container.append('p').html('columns option priority rows')
+    }
 
     const config = settings.config
     container.on('input', this.changeConfig.bind(this))
@@ -215,13 +221,14 @@ class App {
         })
       } else {
         if (this.layout.name === 'Grid') {
-          if (config.width !== undefined && config.height !== undefined) {
-            if (key === 'height') return
+          if ((!config.width || !config.height) && (config.columns === 1 || config.rows === 1)) {
+            if (key === 'columns' || key === 'rows') return
           }
         }
+
         this.controlContainer = container.append('div')
         this._renderLabelControl(key)
-        this._renderSettingControl(key, value)
+        this._renderSettingControl(key, value, config)
       }
     })
   }
@@ -371,7 +378,7 @@ class App {
     }
   }
 
-  _renderSettingControl (key, value) {
+  _renderSettingControl (key, value, config = {}) {
     const type = App._getControlType(key)
     const input = this.controlContainer.append('input')
       .attr('type', type)
@@ -389,6 +396,12 @@ class App {
       break
     case 'center.y':
       input.attr('max', this.containerHeight)
+      break
+    case 'columns':
+    case 'rows':
+      if ((!config.width || !config.height) && (config.columns > 1 || config.rows > 1)) {
+        input.attr('min', 2)
+      }
       break
     default:
     }
