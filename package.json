@@ -18,7 +18,7 @@
     "build": "webpack",
     "lint": "eslint . --ignore-path .gitignore",
     "start": "webpack-dev-server --port 8007",
-    "pretest": "yarn lint",
+
     "test": "jest test/"
   },
   "babel": {
@@ -38,7 +38,7 @@
   },
   "eslintConfig": {
     "env": {
-      "mocha": true,
+      "jest": true,
       "browser": true
     },
     "extends": "@graphiy/eslint-config",
@@ -74,5 +74,11 @@
   },
   "peerDependencies": {
     "lodash": "4.x"
+  },
+  "jest": {
+    "testMatch": [
+      "**/test/radial.js"
+    ],
+    "testNamePattern": "^Layout "
   }
 }

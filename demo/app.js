@@ -22,7 +22,7 @@ class App {
   constructor () {
     this.container = d3Selection.select('#container')
     this.fullData = d3Csv.csvParse(rawData)
-    this.data = this.fullData
+    this.data = _.slice(this.fullData, 0, 63)
     this.templates = ['row', 'tile', 'circle']
 
     const Layouts = [Grid, Radial, Force]
@@ -92,9 +92,10 @@ class App {
 
   initSlider () {
     const maxLength = this.fullData.length
+    const value = this.data.length
     d3Selection.select('.slider')
       .append('h5')
-      .html(`limit data array length ${maxLength}`)
+      .html(`limit data array length ${value}`)
 
     d3Selection.select('.slider')
       .append('input')
@@ -103,7 +104,7 @@ class App {
       .attr('min', 1)
       .attr('max', maxLength)
       .attr('step', 1)
-      .attr('value', maxLength)
+      .attr('value', value)
       .on('input', this.changeData.bind(this))
   }
 

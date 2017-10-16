@@ -29,14 +29,26 @@ export default class Grid extends Layout {
     this.width = this.p.width || 0
     this.height = this.p.height || 0
     const type = this._getType()
+    let columns
+    let rows
 
     switch (type) {
     case ('Grid'):
       if (this.width) {
-        this._getCoords(this._calculateColumns(), 'column')
+        columns = this._calculateColumns()
+        if (columns === 0) {
+          this._getDefaultCoords()
+          break
+        }
+        this._getCoords(columns, 'column')
         break
       }
-      this._getCoords(this._calculateRows())
+      rows = this._calculateRows()
+      if (rows === 0) {
+        this._getDefaultCoords()
+        break
+      }
+      this._getCoords(rows)
       break
     case ('List'):
       if (this.columns) {
