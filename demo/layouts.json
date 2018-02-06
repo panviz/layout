@@ -3,31 +3,47 @@
     "name": "Grid",
     "type": "Grid",
     "config": {
-      "node": {
-        "width": 200,
-        "height": 200
-      }
+      "cell": {
+        "width": 100,
+        "height": 100
+      },
+      "offset": {
+        "x": 10,
+        "y": 10
+      },
+      "width": 500,
+      "height": 200
     }
   },
   "list": {
     "name": "List",
     "type": "Grid",
     "config": {
-      "node": {
-        "height": 20
+      "cell": {
+        "height": 20,
+        "width": 20
       },
-      "columns": 1
+      "columns": 1,
+      "rows": 1
+    }
+  },
+  "table": {
+    "name": "Table",
+    "type": "Grid",
+    "config": {
+      "cell": {
+        "height": 20,
+        "width": 20
+      },
+      "columns": 5,
+      "rows": 5
     }
   },
   "force": {
     "name": "Force",
     "type": "Force",
     "config": {
-      "node": {
-        "width": 20,
-        "height": 20
-      },
-      "distance": 50
+      "distance": 100
     }
   },
   "radial": {
@@ -36,8 +52,7 @@
     "config":  {
       "radius": 300,
       "spacing": 30,
-      "node": { "width": 20, "height": 20 },
-      "center": { "x": 450, "y": 350},
+      "center": { "x": 450, "y": 349},
       "startRadian": 0
     }
   }

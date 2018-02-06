@@ -18,7 +18,6 @@
     "build": "webpack",
     "lint": "eslint . --ignore-path .gitignore",
     "start": "webpack-dev-server --port 8007",
-    "pretest": "yarn lint",
     "test": "jest test/"
   },
   "babel": {
@@ -38,7 +37,7 @@
   },
   "eslintConfig": {
     "env": {
-      "mocha": true,
+      "jest": true,
       "browser": true
     },
     "extends": "@graphiy/eslint-config",
@@ -49,11 +48,13 @@
   },
   "dependencies": {
     "d3-force": "^1.0.6",
+    "d3-quadtree": "^1.0.3",
     "eventemitter3": "^2.0.3",
     "webcola": "^3.3.6"
   },
   "devDependencies": {
     "@graphiy/eslint-config": "graphiy/eslint-config",
+    "@graphiy/transform": "graphiy/transform",
     "babel-cli": "^6.24.1",
     "babel-preset-env": "^1.6.0",
     "css-loader": "^0.28.4",
@@ -76,5 +77,9 @@
   "peerDependencies": {
     "lodash": "4.x"
   },
-  "precommit": "test"
+  "precommit": "test",
+  "jest": {
+    "testMatch": [
+    ]
+  }
 }

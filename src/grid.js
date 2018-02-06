@@ -15,48 +15,122 @@ export default class Grid extends Layout {
 
   static get defaults () {
     return {
-      width: 200,
-      // height: unlimited by default,
-      spacing: { x: 0, y: 0 },
       offset: { x: 0, y: 0 },
-      node: { width: 10, height: 10 },
-      // columns: depends on available width and node size,
-      // rows: unlimited by default,
     }
   }
-  // TODO extend Config with this method
-  set spacing (value) {
-    this.p.spacing = _.isPlainObject(value) ? value : { x: value, y: value }
-  }
+
   /**
-   * Algorythm
-   */
+  * Algorythm
+  */
   run () {
     if (_.isEmpty(this.nodes)) return
-    const offset = this.p.offset
-    const nodeSize = this.p.node
-    const spacing = this.p.spacing
-    const coords = this.coords
+    this.columns = this.p.columns || 0
+    this.rows = this.p.rows || 0
+    this.width = this.p.width || 0
+    this.height = this.p.height || 0
+    const type = this._getType()
+    let columns
+    let rows
 
-    // fill all available width with nodes
-    const columns = this.p.columns || this.availableWidth
-    let line = 0
-    let column = 0
-
-    _.each(this.nodes, (node, i) => {
-      const x = offset.x + ((nodeSize.width + spacing.x) * column)
-      column += 1
-      const y = offset.y + ((nodeSize.height + spacing.y) * line)
-      if (column >= columns || x + nodeSize.width + spacing.x > offset.x + this.p.width) {
-        line += 1; column = 0
+    switch (type) {
+    case ('Grid'):
+      if (this.width) {
+        columns = this._calculateColumns()
+        if (columns === 0) {
+          this._getDefaultCoords()
+          break
+        }
+        this._getCoords(columns, 'column')
+        break
       }
-      coords[i] = { x, y }
-    })
+      rows = this._calculateRows()
+      if (rows === 0) {
+        this._getDefaultCoords()
+        break
+      }
+      this._getCoords(rows)
+      break
+    case ('List'):
+      if (this.columns) {
+        this._getCoords(1, 'column')
+        break
+      }
+      this._getCoords(1)
+      break
+    case ('Table'):
+      if (this.columns) {
+        this._getCoords(this.columns, 'column')
+        break
+      }
+      this._getCoords(this.rows)
+      break
+    default:
+      this._getDefaultCoords()
+    }
 
     super.run()
   }
 
-  get availableWidth () {
-    return Math.floor((this.p.width - this.p.offset.x) / (this.p.node.width + this.p.spacing.x))
+  _getCoords (count, draw = 'row') {
+    const coords = this.coords
+    const cellWidth = this.p.cell.width || 0
+    const cellHeight = this.p.cell.height || 0
+    const offset = this.p.offset
+    let i = 0
+    let j = 0
+
+    if (draw === 'column') {
+      _.each(this.nodes, (node, index) => {
+        if (i === count) {
+          i = 0
+          j++
+        }
+        const x = (i * cellWidth) + offset.x
+        const y = (j * cellHeight) + offset.y
+        i++
+        coords[index] = { x, y }
+      })
+    } else {
+      _.each(this.nodes, (node, index) => {
+        if (j === count) {
+          j = 0
+          i++
+        }
+        const x = (i * cellWidth) + offset.x
+        const y = (j * cellHeight) + offset.y
+        j++
+        coords[index] = { x, y }
+      })
+    }
+  }
+
+  _getDefaultCoords () {
+    _.each(this.nodes, (node, i) => {
+      const x = this.p.offset.x || 0
+      const y = this.p.offset.y || 0
+      this.coords[i] = { x, y }
+    })
+  }
+
+  _calculateColumns () {
+    return Math.floor((this.p.width - this.p.offset.x) / this.p.cell.width)
+  }
+
+  _calculateRows () {
+    return Math.floor((this.p.height - this.p.offset.y) / this.p.cell.height)
+  }
+
+  _getType () {
+    let type
+    if (this.width || this.height) {
+      type = 'Grid'
+    } else if (this.columns === 1 || this.rows === 1) {
+      type = 'List'
+    } else if (this.columns > 1 || this.rows > 1) {
+      type = 'Table'
+    } else {
+      type = 'Default'
+    }
+    return type
   }
 }
