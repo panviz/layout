@@ -43,7 +43,7 @@
     "name": "Force",
     "type": "Force",
     "config": {
-      "distance": 50
+      "distance": 100
     }
   },
   "radial": {

@@ -29,13 +29,11 @@ class App {
 
     this.layouts = _.map(Layouts, (Layout) => {
       const instance = new Layout()
+      let links
       if (instance.name === 'Force') {
-        const links = this.prepereLinksForForceLayout()
-        instance.update(this.data)
-        instance.links = links
-      } else {
-        instance.update(this.data)
+        links = this.prepareLinksForForceLayout()
       }
+      instance.update(this.data, links)
       return instance
     })
 
@@ -45,12 +43,12 @@ class App {
     this.containerHeight = document.documentElement.clientHeight - this.container.node().offsetTop
 
     this.changeTemplate('circle')
-    this.changeLayout(layoutSets.grid)
+    this.changeLayout(layoutSets.force)
 
-    $(window).on('resize', this.onResize.bind(this))
+    $(window).on('resize', this._onResize.bind(this))
   }
 
-  prepereLinksForForceLayout () {
+  prepareLinksForForceLayout () {
     const _data = _.cloneDeep(this.data)
     const source = {}
     const links = []
@@ -129,23 +127,20 @@ class App {
     this.layout = this.layouts.find(layout => layout.constructor.name === d.type)
     this.layout.on('end', this.updatePosition.bind(this))
 
-    d3Selection.selectAll('.layout button')
-      .classed('active', false)
-    d3Selection.select(`.${d.name}`)
-      .classed('active', true)
+    d3Selection.selectAll('.layout button').classed('active', false)
+    d3Selection.select(`.${d.name}`).classed('active', true)
 
     let layoutSet = _.extend({}, d.config)
 
     this._renderSettingControls(d)
 
+    // use previous coordinates to start Force layout for more predictable nodes position
     if (this.layout.name === 'Force') {
-      if (!prevLayout || prevLayout.name !== 'Force') {
-        const coords = this._getCenterCoords()
-        this.nodeInitPosition(coords)
-      } else {
-        const coords = App.getNodePosition()
-        this.nodeInitPosition(coords)
-      }
+      let coords
+      if (!prevLayout) coords = this._initialCoords()
+      else coords = App.getNodesCoords()
+
+      this.nodeInitPosition(coords)
       layoutSet = _.extend({
         width: this.containerWidth,
         height: this.containerHeight,
@@ -154,9 +149,12 @@ class App {
     this.layout.p = layoutSet
   }
 
-  _getCenterCoords () {
+  _initialCoords () {
     const length = d3Selection.selectAll('.node').nodes().length
-    return _.fill(Array(length), { x: this.containerWidth / 2, y: this.containerHeight / 2 })
+    return _.map(_.range(length), () => ({
+      x: this.containerWidth * Math.random(),
+      y: this.containerHeight * Math.random(),
+    }))
   }
 
   updatePosition () {
@@ -242,7 +240,7 @@ class App {
     })
   }
 
-  static getNodePosition () {
+  static getNodesCoords () {
     const coords = []
     const nodes = d3Selection.selectAll('.node')
     _.each(nodes.nodes(), (node, i) => {
@@ -269,22 +267,16 @@ class App {
     nodes.exit().remove()
   }
 
-  onResize () {
-    this.layout.p.width = this.container.node().getBoundingClientRect().width
-  }
-
   changeData () {
     const limit = d3Selection.select('#limit').nodes()[0].value
     this.data = _.slice(this.fullData, 0, limit)
 
     _.each(this.layouts, (layout) => {
+      let links
       if (layout.name === 'Force') {
-        const links = this.prepereLinksForForceLayout()
-        layout.update(this.data)
-        layout.links = links
-      } else {
-        layout.update(this.data)
+        links = this.prepareLinksForForceLayout()
       }
+      layout.update(this.data, links)
     })
     this.render()
     this.layout.run()
@@ -431,6 +423,10 @@ class App {
 
     this.controlContainer.append('label')
       .html(label)
+  }
+
+  _onResize () {
+    this.layout.p.width = this.container.node().getBoundingClientRect().width
   }
 }
 new App() // eslint-disable-line
