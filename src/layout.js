@@ -13,7 +13,10 @@ export default class Layout extends EventEmitter {
     this.enabled = false
     this.p = p
   }
-
+  /**
+   * Properties (config) object of the layout
+   * Layout reacts to properties change by calling run
+   */
   set p (obj) {
     const p = _.clone(obj)
     _.defaultsDeep(p, this.constructor.defaults)

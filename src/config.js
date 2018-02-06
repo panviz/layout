@@ -1,3 +1,6 @@
+/**
+ * Config which triggers callback on any property change
+ */
 export default class Config {
   constructor (p, onChange) {
     const handler = {
