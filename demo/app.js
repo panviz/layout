@@ -43,7 +43,7 @@ class App {
     this.containerHeight = document.documentElement.clientHeight - this.container.node().offsetTop
 
     this.changeTemplate('circle')
-    this.changeLayout(layoutSets.force)
+    this.changeLayout(layoutSets.table)
 
     $(window).on('resize', this._onResize.bind(this))
   }
@@ -130,7 +130,7 @@ class App {
     d3Selection.selectAll('.layout button').classed('active', false)
     d3Selection.select(`.${d.name}`).classed('active', true)
 
-    let layoutSet = _.extend({}, d.config)
+    let layoutSet = _.extend({}, d.config, { name: d.name })
 
     this._renderSettingControls(d)
 
@@ -389,12 +389,6 @@ class App {
       break
     case 'center.y':
       input.attr('max', this.containerHeight)
-      break
-    case 'columns':
-    case 'rows':
-      if ((!config.width || !config.height) && (config.columns > 1 || config.rows > 1)) {
-        input.attr('min', 2)
-      }
       break
     default:
     }
