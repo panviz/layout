@@ -76,7 +76,6 @@ export default class Grid extends Layout {
     const cellWidth = this.p.cell.width || 0
     const cellHeight = this.p.cell.height || 0
     const offset = this.p.offset
-    const cellOffset = this.p.cellOffset
     let i = 0
     let j = 0
 
@@ -86,8 +85,8 @@ export default class Grid extends Layout {
           i = 0
           j++
         }
-        const x = (i * cellWidth) + offset.x + (i * cellOffset.x)
-        const y = (j * cellHeight) + offset.y + (j * cellOffset.y)
+        const x = (i * cellWidth) + offset.x
+        const y = (j * cellHeight) + offset.y
         i++
         coords[index] = { x, y }
       })
@@ -97,8 +96,8 @@ export default class Grid extends Layout {
           j = 0
           i++
         }
-        const x = (i * cellWidth) + offset.x + (i * cellOffset.x)
-        const y = (j * cellHeight) + offset.y + (j * cellOffset.y)
+        const x = (i * cellWidth) + offset.x
+        const y = (j * cellHeight) + offset.y
         j++
         coords[index] = { x, y }
       })
