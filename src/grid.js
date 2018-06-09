@@ -119,6 +119,4 @@ export default class Grid extends Layout {
   _calculateRows () {
     return Math.floor((this.p.height - this.p.offset.y) / this.p.cell.height)
   }
-
-
 }

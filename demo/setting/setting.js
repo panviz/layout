@@ -1,5 +1,4 @@
 import EventEmitter from 'eventemitter3'
-import _ from 'lodash'
 import dat from 'dat.gui'
 import '../style/datGui.scss'
 

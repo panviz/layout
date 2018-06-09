@@ -2,7 +2,6 @@ import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
 import * as d3Transition from 'd3-transition' // eslint-disable-line
 import * as d3Ease from 'd3-ease'
-import _ from 'lodash'
 
 import Grid from '../src/grid'
 import Force from '../src/force'
