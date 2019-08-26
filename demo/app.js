@@ -1,14 +1,15 @@
 import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
 import * as d3Transition from 'd3-transition' // eslint-disable-line
-import * as d3Ease from 'd3-ease'
 
 import Grid from '../src/grid'
 import Force from '../src/force'
 import Radial from '../src/radial'
 
 import rawData from './data.csv'
-import Setting from './setting/setting'
+import Settings from './settings'
+
+import * as FRHelper from './modules/force'
 
 import './template/node.scss'
 import './template/row.scss'
@@ -29,9 +30,7 @@ class App {
     this.layouts = _.map(Layouts, (Layout) => {
       const instance = new Layout()
       let links
-      if (instance.name === 'Force') {
-        links = this.prepareLinksForForceLayout()
-      }
+      if (instance.name === 'Force') links = FRHelper.prepareLinks(this.data)
       instance.update(this.data, links)
       return instance
     })
@@ -40,35 +39,13 @@ class App {
     this.initSlider()
     this.containerWidth = this.container.node().getBoundingClientRect().width
     this.containerHeight = document.documentElement.clientHeight - this.container.node().offsetTop
-    this.setting = new Setting({ width: this.containerWidth, height: this.containerHeight })
+    this.setting = new Settings({ width: this.containerWidth, height: this.containerHeight })
 
     this.changeTemplate('circle')
     this.changeLayout(layoutSets.table)
 
     this.setting.on('change', this.changeConfig.bind(this))
     $(window).on('resize', this._onResize.bind(this))
-  }
-
-  prepareLinksForForceLayout () {
-    const _data = _.cloneDeep(this.data)
-    const source = {}
-    const links = []
-    _.each(_data, (node, i) => {
-      if (node.id === node.group) {
-        source[node.group] = i
-        delete _data[i]
-      }
-    })
-    _.each(_data, (node, i) => {
-      if (node) {
-        const sourceIndex = source[node.group]
-        if (sourceIndex !== undefined) {
-          links.push({ source: sourceIndex, target: i })
-        }
-      }
-    })
-
-    return links
   }
 
   renderControls () {
@@ -138,10 +115,10 @@ class App {
     // use previous coordinates to start Force layout for more predictable nodes position
     if (this.layout.name === 'Force') {
       let coords
-      if (!prevLayout) coords = this._initialCoords()
+      if (!prevLayout) coords = this._getInitialCoords()
       else coords = App.getNodesCoords()
 
-      this.nodeInitPosition(coords)
+      FRHelper.nodeInitPosition(this.layout.nodes, coords)
       layoutSet = _.extend({
         width: this.containerWidth,
         height: this.containerHeight,
@@ -150,7 +127,7 @@ class App {
     this.layout.p = layoutSet
   }
 
-  _initialCoords () {
+  _getInitialCoords () {
     const length = d3Selection.selectAll('.node').nodes().length
     return _.map(_.range(length), () => ({
       x: this.containerWidth * Math.random(),
@@ -169,9 +146,16 @@ class App {
     if (this.layout.name === 'Force') {
       const line = this.container.selectAll('line')
       if (line !== this.layout.links.length) {
-        this._initializeLine()
+
+        this.svg = d3Selection.select('svg')
+        if (!this.svg.nodes().length) {
+          this.svg = this.container.append('svg')
+            .attr('width', this.containerWidth)
+            .attr('height', this.containerHeight)
+        }
+        FRHelper.initializeLines(this.svg, this.layout)
       }
-      this._updateLinePosition()
+      FRHelper.updateLines(this.svg, this.layout)
 
       const nodeRect = d3Selection.select('.node').node().getBoundingClientRect()
       const nodeWidth = nodeRect.width
@@ -187,14 +171,6 @@ class App {
         $(node).css({ transform: `translate(${coord.x}px, ${coord.y}px)` })
       })
     }
-  }
-
-  nodeInitPosition (coords) {
-    if (coords.length !== this.layout.nodes.length) return
-    _.each(this.layout.nodes, (node, i) => {
-      node.x = coords[i].x
-      node.y = coords[i].y
-    })
   }
 
   static getNodesCoords () {
@@ -230,9 +206,7 @@ class App {
 
     _.each(this.layouts, (layout) => {
       let links
-      if (layout.name === 'Force') {
-        links = this.prepareLinksForForceLayout()
-      }
+      if (layout.name === 'Force') links = FRHelper.prepareLinks(this.data)
       layout.update(this.data, links)
     })
     this.render()
@@ -240,74 +214,6 @@ class App {
 
     d3Selection.select('.slider h5')
       .html(`limit data array length ${limit}`)
-  }
-
-  _initializeLine () {
-    const startLinksPosition = this._calcStartLinksPosition()
-    this.svg = d3Selection.select('svg')
-    if (!this.svg.nodes().length) {
-      this.svg = this.container.append('svg')
-        .attr('width', this.containerWidth)
-        .attr('height', this.containerHeight)
-    }
-
-    this.svg.selectAll('line')
-      .data(startLinksPosition)
-      .enter()
-      .append('line')
-      .attr('x1', d => d.x1)
-      .attr('y1', d => d.y1)
-      .attr('x2', d => d.x2)
-      .attr('y2', d => d.y2)
-      .attr('stroke-width', 1)
-      .attr('stroke', 'black')
-  }
-
-  _updateLinePosition () {
-    const edgesCoords = this.layout.edgesCoords
-
-    const line = this.svg.selectAll('line')
-      .data(edgesCoords)
-
-    line.transition()
-      .ease(d3Ease.easeLinear)
-      .duration(750)
-      .attr('x1', d => d.x1)
-      .attr('y1', d => d.y1)
-      .attr('x2', d => d.x2)
-      .attr('y2', d => d.y2)
-
-    line.enter()
-      .append('line')
-      .transition()
-      .ease(d3Ease.easeLinear)
-      .duration(750)
-      .attr('x1', d => d.x1)
-      .attr('y1', d => d.y1)
-      .attr('x2', d => d.x2)
-      .attr('y2', d => d.y2)
-
-    line.exit()
-      .remove()
-  }
-
-  _calcStartLinksPosition () {
-    const coords = []
-    const items = d3Selection.selectAll('.node')
-    const links = this.layout.links
-    _.each(links, (link, i) => {
-      let source = items.nodes()[link.source.index].style.transform.slice(10, -1)
-      let target = items.nodes()[link.target.index].style.transform.slice(10, -1)
-      source = source.split(',')
-      target = target.split(',')
-      coords[i] = {
-        x1: parseFloat(source[0]),
-        y1: parseFloat(source[1]),
-        x2: parseFloat(target[0]),
-        y2: parseFloat(target[1]),
-      }
-    })
-    return coords
   }
 
   changeConfig (property, path, value) {

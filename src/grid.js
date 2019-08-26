@@ -19,7 +19,6 @@ export default class Grid extends Layout {
       cellOffset: { x: 0, y: 0 },
     }
   }
-
   /**
   * Algorythm
   */

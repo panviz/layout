@@ -1,8 +1,8 @@
 import EventEmitter from 'eventemitter3'
 import dat from 'dat.gui'
-import '../style/datGui.scss'
+import './style/datGui.scss'
 
-export default class Setting extends EventEmitter {
+export default class Settings extends EventEmitter {
   constructor (p) {
     super()
     this.pageSize = p
