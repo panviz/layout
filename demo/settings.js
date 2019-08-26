@@ -13,7 +13,7 @@ export default class Settings extends EventEmitter {
     container.appendChild(this.gui.domElement)
   }
 
-  updateControllers (p) {
+  updateControls (p) {
     this.deleteControllers()
     this.deleteFolders(this.gui.__folders)
     this.setControllers(p)
@@ -91,7 +91,7 @@ export default class Settings extends EventEmitter {
       }
 
       // config custom property
-      if (controller.property === 'startRadian') {
+      if (controller.property === 'startDegree') {
         const path = controller.path
         const sliderController = controller.max(360)
         sliderController.path = path

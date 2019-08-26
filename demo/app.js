@@ -24,8 +24,16 @@ class App {
   constructor () {
     this.container = d3Selection.select('#container')
     this.fullData = d3Csv.csvParse(rawData)
-    this.data = _.slice(this.fullData, 0, 63)
+    this.dataLimit = 63
+    this.data = _.slice(this.fullData, 0, this.dataLimit)
     this.templates = ['row', 'tile', 'circle']
+    this.templatesCompatibility = {
+      Grid: ['tile', 'circle'],
+      Table: ['circle', 'tile'],
+      List: ['row', 'circle', 'tile'],
+      Radial: ['circle'],
+      Force: ['circle'],
+    }
     const Layouts = [Grid, Radial, Force]
     this.layouts = _.map(Layouts, (Layout) => {
       const instance = new Layout()
@@ -35,63 +43,42 @@ class App {
       return instance
     })
 
-    this.renderControls()
-    this.initSlider()
     this.containerWidth = this.container.node().getBoundingClientRect().width
     this.containerHeight = document.documentElement.clientHeight - this.container.node().offsetTop
-    this.setting = new Settings({ width: this.containerWidth, height: this.containerHeight })
+    this.settings = new Settings({ width: this.containerWidth, height: this.containerHeight })
 
-    this.changeTemplate('circle')
+    this.template = 'circle'
     this.changeLayout(layoutSets.table)
 
-    this.setting.on('change', this.changeConfig.bind(this))
+    this.settings.on('change', this.changeConfig.bind(this))
     $(window).on('resize', this._onResize.bind(this))
+    this.render()
   }
 
-  renderControls () {
-    d3Selection.select('.layout').selectAll('button')
-      .data(_.values(layoutSets))
-      .enter()
-      .append('button')
-      .html(d => d.name)
-      .attr('class', d => d.name)
-      .on('click', this.changeLayout.bind(this))
+  render () {
+    this._renderControls()
+    d3Selection.select('header > .description').html(this.layoutConfig.description)
 
-    d3Selection.select('.template').selectAll('button')
-      .data(this.templates)
-      .enter()
-      .append('button')
-      .html(d => d)
-      .attr('class', d => d)
-      .on('click', this.changeTemplate.bind(this))
-  }
+    const nodes = this.container.selectAll('.node').data(this.data, d => d.id)
+    nodes.enter()
+      .append('div')
+      .style('background', d => d.id)
+      .style('transform', 'translate(0px, 0px)')
+      .attr('class', 'node')
+      .classed(this.template, true)
+      .append('div')
+      .html(d => d.id)
+    nodes
+      .attr('class', 'node')
+      .classed(this.template, true)
+      .style('width', d => this.template === 'tile' ? this.layout.p.cell.width + 'px' : null)
+      .style('height', d => this.template === 'tile' ? this.layout.p.cell.height + 'px' : null)
 
-  initSlider () {
-    const maxLength = this.fullData.length
-    const value = this.data.length
-    d3Selection.select('.slider')
-      .append('h5')
-      .html(`limit data array length ${value}`)
-
-    d3Selection.select('.slider')
-      .append('input')
-      .attr('id', 'limit')
-      .attr('type', 'range')
-      .attr('min', 1)
-      .attr('max', maxLength)
-      .attr('step', 1)
-      .attr('value', value)
-      .on('input', this.changeData.bind(this))
+    nodes.exit().remove()
   }
 
   changeTemplate (template) {
-    d3Selection.selectAll('.template button')
-      .classed('active', false)
-    d3Selection.select(`.${template}`)
-      .classed('active', true)
-
     this.template = template
-    this.render()
   }
 
   changeLayout (d) {
@@ -102,15 +89,15 @@ class App {
       prevLayout = this.layout
     }
 
+    this.layoutConfig = d
     this.layout = this.layouts.find(layout => layout.constructor.name === d.type)
     this.layout.on('end', this.updatePosition.bind(this))
 
-    d3Selection.selectAll('.layout button').classed('active', false)
-    d3Selection.select(`.${d.name}`).classed('active', true)
-
     let layoutSet = _.extend({}, d.config, { name: d.name })
+    if (d.name === 'Radial') layoutSet.startRadian = d.config.startDegree * Math.PI / 180
 
-    this.setting.updateControllers(d.config)
+    const config = _.extend({ 'items length': this.dataLimit }, d.config)
+    this.settings.updateControls(config)
 
     // use previous coordinates to start Force layout for more predictable nodes position
     if (this.layout.name === 'Force') {
@@ -125,6 +112,8 @@ class App {
       }, layoutSet)
     }
     this.layout.p = layoutSet
+    this._ensureCompatibleTemplate()
+    this.render()
   }
 
   _getInitialCoords () {
@@ -183,26 +172,35 @@ class App {
     return coords
   }
 
-  render () {
-    const nodes = this.container.selectAll('.node').data(this.data, d => d.id)
+  _renderControls () {
+    const layoutButtons = d3Selection.select('.layout').selectAll('button')
+      .data(_.values(layoutSets))
+    layoutButtons
+      .enter()
+      .append('button')
+      .html(d => d.name)
+      .attr('class', d => d.name)
+      .on('click', this.changeLayout.bind(this))
+      .merge(layoutButtons)
+      .classed('active', d => d.name === this.layoutConfig.name )
 
-    nodes.attr('class', 'node').classed(this.template, true)
+    const templateButtons = d3Selection.select('.template').selectAll('button')
+      .data(this.templates)
 
-    nodes.enter()
-      .append('div')
-      .style('background', d => d.id)
-      .style('transform', 'translate(0px, 0px)')
-      .attr('class', 'node')
-      .classed(this.template, true)
-      .append('div')
-      .html(d => d.id)
-
-    nodes.exit().remove()
+    templateButtons
+      .enter()
+      .append('button')
+      .html(d => d)
+      .attr('class', d => d)
+      .on('click', this._onTemplateChange.bind(this))
+      .merge(templateButtons)
+      .classed('active', d => d === this.template)
+      .attr('disabled', d => _.includes(this.templatesCompatibility[this.layoutConfig.name], d) ? null : true)
   }
 
-  changeData () {
-    const limit = d3Selection.select('#limit').nodes()[0].value
-    this.data = _.slice(this.fullData, 0, limit)
+  changeData (limit) {
+    this.dataLimit = limit
+    this.data = _.slice(this.fullData, 0, this.dataLimit)
 
     _.each(this.layouts, (layout) => {
       let links
@@ -211,20 +209,31 @@ class App {
     })
     this.render()
     this.layout.run()
-
-    d3Selection.select('.slider h5')
-      .html(`limit data array length ${limit}`)
   }
 
-  changeConfig (property, path, value) {
-    if (property === 'startRadian') {
+  changeConfig (path, property, value) {
+    if (property === 'items length') return this.changeData(value)
+    if (property === 'startDegree') {
+      property = 'startRadian'
       value *= (Math.PI / 180)
     }
+    _.set(this.layoutConfig.config, `${path}${property}`, value)
     _.set(this.layout.p, `${path}${property}`, value)
+    this.render()
+  }
+
+  _ensureCompatibleTemplate () {
+    const compatibleTemplates = this.templatesCompatibility[this.layout.name]
+    if (!_.includes(compatibleTemplates, this.template)) this.changeTemplate(compatibleTemplates[0])
   }
 
   _onResize () {
     this.layout.p.width = this.container.node().getBoundingClientRect().width
+  }
+
+  _onTemplateChange (value) {
+    this.changeTemplate(value)
+    this.render()
   }
 }
 new App() // eslint-disable-line

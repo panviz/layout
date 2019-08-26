@@ -2,6 +2,7 @@
   "grid": {
     "name": "Grid",
     "type": "Grid",
+    "description": "Grid layout places data items by grid defined by size, where height takes effect only if width is not set or zero.",
     "config": {
       "cell": {
         "width": 100,
@@ -18,10 +19,11 @@
   "list": {
     "name": "List",
     "type": "Grid",
+    "description": "List is a Grid with a single column",
     "config": {
       "cell": {
-        "height": 20,
-        "width": 20
+        "width": 300,
+        "height": 20
       },
       "columns": 1,
       "rows": 1
@@ -30,6 +32,7 @@
   "table": {
     "name": "Table",
     "type": "Grid",
+    "description": "Table is a Grid but defined by number of rows and columns. \n'rows' setting works only if columns are not set or zero",
     "config": {
       "cell": {
         "height": 30,
@@ -44,16 +47,18 @@
     "type": "Force",
     "config": {
       "distance": 100
-    }
+    },
+    "description": "Force-directed layout"
   },
   "radial": {
     "name": "Radial",
     "type": "Radial",
+    "description": "Radial layout",
     "config":  {
       "radius": 300,
       "spacing": 30,
       "center": { "x": 450, "y": 349},
-      "startRadian": 0
+      "startDegree": 0
     }
   }
 }
