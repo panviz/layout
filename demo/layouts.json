@@ -59,6 +59,9 @@
       "spacing": 30,
       "center": { "x": 450, "y": 349},
       "startDegree": 0
+    },
+    "options": {
+      "startDegree": { "min": 0, "max": 360, "step": 1 }
     }
   }
 }

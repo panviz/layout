@@ -1,3 +1,5 @@
+import _ from 'lodash'
+import $ from 'jquery'
 import * as d3Selection from 'd3-selection'
 import * as d3Csv from 'd3-dsv'
 import * as d3Transition from 'd3-transition' // eslint-disable-line
@@ -22,12 +24,17 @@ import layoutSets from './layouts.json'
 
 class App {
   constructor () {
+    // changeable variables of application
+    this.state = {}
+    // Components rendering UI
+    this.gui = {}
     this.container = d3Selection.select('#container')
-    this.fullData = d3Csv.csvParse(rawData)
-    this.dataLimit = 63
-    this.data = _.slice(this.fullData, 0, this.dataLimit)
+    this._fullData = d3Csv.csvParse(rawData)
+    this.state.dataLimit = 63
+    this.state.data = _.slice(this._fullData, 0, this.state.dataLimit)
     this.templates = ['row', 'tile', 'circle']
-    this.templatesCompatibility = {
+    this.state.template = 'circle'
+    this._templatesCompatibility = {
       Grid: ['tile', 'circle'],
       Table: ['circle', 'tile'],
       List: ['row', 'circle', 'tile'],
@@ -38,113 +45,110 @@ class App {
     this.layouts = _.map(Layouts, (Layout) => {
       const instance = new Layout()
       let links
-      if (instance.name === 'Force') links = FRHelper.prepareLinks(this.data)
-      instance.update(this.data, links)
+      if (instance.name === 'Force') links = FRHelper.prepareLinks(this.state.data)
+      instance.update(this.state.data, links)
       return instance
     })
 
-    this.containerWidth = this.container.node().getBoundingClientRect().width
-    this.containerHeight = document.documentElement.clientHeight - this.container.node().offsetTop
-    this.settings = new Settings({ width: this.containerWidth, height: this.containerHeight })
-
-    this.template = 'circle'
+    this.gui.settings = new Settings()
     this.changeLayout(layoutSets.table)
 
-    this.settings.on('change', this.changeConfig.bind(this))
+    this.gui.settings.on('change', this.changeConfig.bind(this))
     $(window).on('resize', this._onResize.bind(this))
     this.render()
+    this.state.layout.run()
   }
 
   render () {
     this._renderControls()
-    d3Selection.select('header > .description').html(this.layoutConfig.description)
+    d3Selection.select('header > .description').html(this.state.layoutConfig.description)
 
-    const nodes = this.container.selectAll('.node').data(this.data, d => d.id)
+    const nodes = this.container.selectAll('.node').data(this.state.data, d => d.id)
     nodes.enter()
       .append('div')
       .style('background', d => d.id)
       .style('transform', 'translate(0px, 0px)')
       .attr('class', 'node')
-      .classed(this.template, true)
+      .classed(this.state.template, true)
       .append('div')
       .html(d => d.id)
     nodes
       .attr('class', 'node')
-      .classed(this.template, true)
-      .style('width', d => this.template === 'tile' ? this.layout.p.cell.width + 'px' : null)
-      .style('height', d => this.template === 'tile' ? this.layout.p.cell.height + 'px' : null)
+      .classed(this.state.template, true)
+      .style('width', d => (
+        this.state.template === 'tile' ? `${this.state.layout.p.cell.width}px` : null
+      ))
+      .style('height', d => (
+        this.state.template === 'tile' ? `${this.state.layout.p.cell.height}px` : null
+      ))
 
     nodes.exit().remove()
   }
 
   changeTemplate (template) {
-    this.template = template
+    this.state.template = template
   }
 
   changeLayout (d) {
     let prevLayout
 
-    if (this.layout) {
-      this.layout.off('end')
-      prevLayout = this.layout
+    if (this.state.layout) {
+      this.state.layout.off('end')
+      prevLayout = this.state.layout
     }
 
-    this.layoutConfig = d
-    this.layout = this.layouts.find(layout => layout.constructor.name === d.type)
-    this.layout.on('end', this.updatePosition.bind(this))
+    this.state.layoutConfig = d
+    this.state.layout = this.layouts.find(layout => layout.name === d.type)
+    this.state.layout.on('end', this.updatePosition.bind(this))
 
     let layoutSet = _.extend({}, d.config, { name: d.name })
     if (d.name === 'Radial') layoutSet.startRadian = d.config.startDegree * Math.PI / 180
 
-    const config = _.extend({ 'items length': this.dataLimit }, d.config)
-    this.settings.updateControls(config)
+    this._renderController()
 
     // use previous coordinates to start Force layout for more predictable nodes position
-    if (this.layout.name === 'Force') {
+    if (this.state.layout.name === 'Force') {
       let coords
       if (!prevLayout) coords = this._getInitialCoords()
       else coords = App.getNodesCoords()
 
-      FRHelper.nodeInitPosition(this.layout.nodes, coords)
-      layoutSet = _.extend({
-        width: this.containerWidth,
-        height: this.containerHeight,
-      }, layoutSet)
+      FRHelper.nodeInitPosition(this.state.layout.nodes, coords)
+      layoutSet = _.extend(this.getContainerSize(), layoutSet)
     }
-    this.layout.p = layoutSet
+    this.state.layout.p = layoutSet
     this._ensureCompatibleTemplate()
     this.render()
   }
 
   _getInitialCoords () {
     const length = d3Selection.selectAll('.node').nodes().length
+    const containerSize = this.getContainerSize()
     return _.map(_.range(length), () => ({
-      x: this.containerWidth * Math.random(),
-      y: this.containerHeight * Math.random(),
+      x: containerSize.width * Math.random(),
+      y: containerSize.height * Math.random(),
     }))
   }
 
   updatePosition () {
-    const coords = this.layout.coords
+    const coords = this.state.layout.coords
     const nodes = $('.node')
 
-    if (this.container.selectAll('svg').nodes().length && this.layout.name !== 'Force') {
+    if (this.container.selectAll('svg').nodes().length && this.state.layout.name !== 'Force') {
       this.container.selectAll('svg').remove()
     }
 
-    if (this.layout.name === 'Force') {
+    if (this.state.layout.name === 'Force') {
       const line = this.container.selectAll('line')
-      if (line !== this.layout.links.length) {
-
+      if (line !== this.state.layout.links.length) {
         this.svg = d3Selection.select('svg')
         if (!this.svg.nodes().length) {
           this.svg = this.container.append('svg')
-            .attr('width', this.containerWidth)
-            .attr('height', this.containerHeight)
+            .attr('width', this.getContainerSize().width)
+            .attr('height', this.getContainerSize().height)
         }
-        FRHelper.initializeLines(this.svg, this.layout)
+        FRHelper.initializeLines(this.svg, this.state.layout)
       }
-      FRHelper.updateLines(this.svg, this.layout)
+      FRHelper.updateLines(this.svg, this.state.layout)
 
       const nodeRect = d3Selection.select('.node').node().getBoundingClientRect()
       const nodeWidth = nodeRect.width
@@ -182,7 +186,7 @@ class App {
       .attr('class', d => d.name)
       .on('click', this.changeLayout.bind(this))
       .merge(layoutButtons)
-      .classed('active', d => d.name === this.layoutConfig.name )
+      .classed('active', d => d.name === this.state.layoutConfig.name)
 
     const templateButtons = d3Selection.select('.template').selectAll('button')
       .data(this.templates)
@@ -194,21 +198,36 @@ class App {
       .attr('class', d => d)
       .on('click', this._onTemplateChange.bind(this))
       .merge(templateButtons)
-      .classed('active', d => d === this.template)
-      .attr('disabled', d => _.includes(this.templatesCompatibility[this.layoutConfig.name], d) ? null : true)
+      .classed('active', d => d === this.state.template)
+      .attr('disabled', d => (
+        _.includes(this._templatesCompatibility[this.state.layoutConfig.name], d) ? null : true
+      ))
+  }
+
+  _renderController () {
+    const config = _.extend({ 'items length': this.state.dataLimit }, this.state.layoutConfig.config)
+    const options = _.extend({ 'items length': { max: this._fullData.length } }, this.state.layoutConfig.options)
+    if (_.get(config, 'center.x')) {
+      const { width, height } = this.getContainerSize()
+      _.extend(options, {
+        'center.x': { max: width },
+        'center.y': { max: height },
+      })
+    }
+    this.gui.settings.updateControls(config, options)
   }
 
   changeData (limit) {
-    this.dataLimit = limit
-    this.data = _.slice(this.fullData, 0, this.dataLimit)
+    this.state.dataLimit = limit
+    this.state.data = _.slice(this._fullData, 0, this.state.dataLimit)
 
     _.each(this.layouts, (layout) => {
       let links
-      if (layout.name === 'Force') links = FRHelper.prepareLinks(this.data)
-      layout.update(this.data, links)
+      if (layout.name === 'Force') links = FRHelper.prepareLinks(this.state.data)
+      layout.update(this.state.data, links)
     })
     this.render()
-    this.layout.run()
+    this.state.layout.run()
   }
 
   changeConfig (path, property, value) {
@@ -217,18 +236,32 @@ class App {
       property = 'startRadian'
       value *= (Math.PI / 180)
     }
-    _.set(this.layoutConfig.config, `${path}${property}`, value)
-    _.set(this.layout.p, `${path}${property}`, value)
+    _.set(this.state.layoutConfig.config, `${path}${property}`, value)
+    _.set(this.state.layout.p, `${path}${property}`, value)
     this.render()
   }
 
-  _ensureCompatibleTemplate () {
-    const compatibleTemplates = this.templatesCompatibility[this.layout.name]
-    if (!_.includes(compatibleTemplates, this.template)) this.changeTemplate(compatibleTemplates[0])
+  getContainerSize () {
+    return {
+      width: this.container.node().getBoundingClientRect().width,
+      height: document.documentElement.clientHeight - this.container.node().offsetTop,
+    }
   }
 
+  _ensureCompatibleTemplate () {
+    const compatibleTemplates = this._templatesCompatibility[this.state.layout.name]
+    if (!_.includes(compatibleTemplates, this.state.template)) {
+      this.changeTemplate(compatibleTemplates[0])
+    }
+  }
+
+  // Handlers
+
   _onResize () {
-    this.layout.p.width = this.container.node().getBoundingClientRect().width
+    const size = this.getContainerSize()
+    this.state.layout.p.width = size.width
+    this.state.layout.p.height = size.height
+    this._renderController()
   }
 
   _onTemplateChange (value) {

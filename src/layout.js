@@ -5,6 +5,7 @@ import EventEmitter from 'eventemitter3'
 import Config from './config'
 
 export default class Layout extends EventEmitter {
+  static get name () { return 'Layout' }
   constructor (p) {
     super()
     this.nodes = []

@@ -9,6 +9,7 @@ import Layout from './layout'
  * @param Object p.node {width, height} of node (add to spacing when calculating next node position)
  */
 export default class Grid extends Layout {
+  static get name () { return 'Grid' }
   constructor (p = {}) {
     super(p)
   }
@@ -32,6 +33,13 @@ export default class Grid extends Layout {
     let rows
 
     switch (this.p.name) {
+    case ('List'):
+      if (this.columns) {
+        this._getCoords(1, 'column')
+        break
+      }
+      this._getCoords(1)
+      break
     case ('Grid'):
       if (this.width) {
         columns = this._calculateColumns()
@@ -48,13 +56,6 @@ export default class Grid extends Layout {
         break
       }
       this._getCoords(rows)
-      break
-    case ('List'):
-      if (this.columns) {
-        this._getCoords(1, 'column')
-        break
-      }
-      this._getCoords(1)
       break
     case ('Table'):
       if (this.columns) {

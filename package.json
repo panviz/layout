@@ -1,13 +1,13 @@
 {
   "name": "@graphiy/layout",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Layouts",
   "keywords": [
     "data visualization",
     "layout algorythm"
   ],
   "homepage": "https://github.com/graphiy/layout#readme",
-  "license": "GPL-3.0+",
+  "license": "MIT",
   "main": "dist/layout.js",
   "module": "index",
   "repository": {
@@ -15,10 +15,13 @@
     "url": "https://github.com/Graphiy/layout"
   },
   "scripts": {
-    "build": "webpack",
+    "build": "yarn build:lib && yarn build:demo",
+    "build:lib": "webpack --mode=production",
+    "build:demo": "cd demo/ && webpack --mode=production",
     "lint": "eslint . --ignore-path .gitignore",
-    "start": "webpack-dev-server --config demo/webpack.config.babel.js --port 8007",
-    "test": "jest test/"
+    "start": "cd demo && webpack-dev-server --port 8007",
+    "deploy": "cd demo/ && rsync -azP --delete dist/ index.html daviste.com:/home/dmitra/daviste.com/static/demo/graphiy-layout",
+    "test": "jest"
   },
   "babel": {
     "presets": [
@@ -49,7 +52,6 @@
   "dependencies": {
     "d3-force": "^2.0.1",
     "d3-quadtree": "^1.0.3",
-    "dat.gui": "^0.7.2",
     "eventemitter3": "^4.0.0",
     "webcola": "^3.3.6"
   },
@@ -59,15 +61,15 @@
     "@babel/preset-env": "^7.5.5",
     "@babel/register": "^7.5.5",
     "@graphiy/eslint-config": "^0.1.0",
-    "@graphiy/transform": "^0.1.0",
     "css-loader": "^3.2.0",
     "d3-dsv": "^1.0.7",
     "d3-ease": "^1.0.3",
     "d3-selection": "^1.1.0",
     "d3-transition": "^1.1.0",
+    "dat.gui": "^0.7.2",
     "eslint": "^6.2.2",
     "jest": "^24.9.0",
-    "jquery": "^3.2.1",
+    "jquery": "^3.4.1",
     "node-sass": "^4.9.0",
     "raw-loader": "^3.1.0",
     "sass-loader": "^7.0.3",
@@ -81,8 +83,11 @@
   },
   "jest": {
     "testMatch": [
-      "**/test/radial.js"
+      "**/test/**/!(*.setup).js"
     ],
-    "testNamePattern": "^Layout "
-  }
+    "setupFiles": [
+      "./test/global.setup.js"
+    ]
+  },
+  "precommit": "lint"
 }

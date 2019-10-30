@@ -10,6 +10,7 @@ import Layout from './layout'
  * @param Number p.distance link force distance
  */
 export default class Force extends Layout {
+  static get name () { return 'Force' }
   constructor (p = {}) {
     super(p)
     this.edges = []

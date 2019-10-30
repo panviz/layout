@@ -12,6 +12,7 @@ import Layout from './layout'
  *
  */
 export default class Radial extends Layout {
+  static get name () { return 'Radial' }
   constructor (p = {}) {
     super(p)
   }

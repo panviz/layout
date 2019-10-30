@@ -31,6 +31,25 @@ export function nodeInitPosition (nodes, coords) {
   })
 }
 
+export function calcLinksStartPosition (layout) {
+  const coords = []
+  const items = d3Selection.selectAll('.node')
+  const links = layout.links
+  _.each(links, (link, i) => {
+    let source = items.nodes()[link.source.index].style.transform.slice(10, -1)
+    let target = items.nodes()[link.target.index].style.transform.slice(10, -1)
+    source = source.split(',')
+    target = target.split(',')
+    coords[i] = {
+      x1: parseFloat(source[0]),
+      y1: parseFloat(source[1]),
+      x2: parseFloat(target[0]),
+      y2: parseFloat(target[1]),
+    }
+  })
+  return coords
+}
+
 export function initializeLines (svg, layout) {
   const startLinksPosition = calcLinksStartPosition(layout)
 
@@ -72,23 +91,4 @@ export function updateLines (svg, layout) {
 
   line.exit()
     .remove()
-}
-
-export function calcLinksStartPosition (layout) {
-  const coords = []
-  const items = d3Selection.selectAll('.node')
-  const links = layout.links
-  _.each(links, (link, i) => {
-    let source = items.nodes()[link.source.index].style.transform.slice(10, -1)
-    let target = items.nodes()[link.target.index].style.transform.slice(10, -1)
-    source = source.split(',')
-    target = target.split(',')
-    coords[i] = {
-      x1: parseFloat(source[0]),
-      y1: parseFloat(source[1]),
-      x2: parseFloat(target[0]),
-      y2: parseFloat(target[1]),
-    }
-  })
-  return coords
 }

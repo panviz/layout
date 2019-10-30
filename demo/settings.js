@@ -3,53 +3,51 @@ import dat from 'dat.gui'
 import './style/datGui.scss'
 
 export default class Settings extends EventEmitter {
-  constructor (p) {
+  constructor () {
     super()
-    this.pageSize = p
     this.gui = new dat.GUI({ autoPlace: false })
-    this.folders = []
+    this._folders = []
     this.controllers = []
     const container = document.querySelector('header')
     container.appendChild(this.gui.domElement)
   }
 
-  updateControls (p) {
+  updateControls (p, options) {
     this.deleteControllers()
     this.deleteFolders(this.gui.__folders)
-    this.setControllers(p)
-    this.configController()
+    this._parseConfig(p, options)
   }
 
-  setControllers (p) {
+  _parseConfig (p, options) {
     const keys = Object.keys(p)
     _.each(keys, (key) => {
       if (_.isObject(p[key])) {
         let folder
-        if (this.folders.length > 0) {
-          folder = this.setFolder(key, _.last(this.folders))
+        if (this._folders.length > 0) {
+          folder = this.setFolder(key, _.last(this._folders))
         } else {
           folder = this.setFolder(key)
         }
-        this.folders.push(folder)
-        this.setControllers(p[key])
-      } else if (this.folders.length > 0) {
-        this.setController(p, key, _.last(this.folders))
+        this._folders.push(folder)
+        this._parseConfig(p[key], options)
+      } else if (this._folders.length > 0) {
+        this.setController(p, key, _.last(this._folders), options)
       } else {
-        this.setController(p, key)
+        this.setController(p, key, undefined, options)
       }
     })
-    this.folders.pop()
+    this._folders.pop()
   }
 
-  setController (obj, property, folder) {
-    let controller
-    if (folder) {
-      controller = folder.add(obj, property)
-    } else {
-      controller = this.gui.add(obj, property)
-    }
-
-    controller.path = _.reduce(this.folders, (result, value, key) => `${result}.${value.name}`, '')
+  setController (obj, property, folder, options = {}) {
+    const gui = folder || this.gui
+    const folderPath = _.reduce(this._folders, (result, value, key) => (
+      result ? `${result}.${value.name}` : value.name
+    ), '')
+    const path = folderPath ? `${folderPath}.${property}` : property
+    const opt = _.get(options, path) || {}
+    const controller = gui.add(obj, property, opt.min || 0, opt.max, opt.step || 1)
+    controller.path = folderPath
     controller.onChange(this._onChange.bind(this, controller))
     this.controllers.push(controller)
   }
@@ -79,38 +77,6 @@ export default class Settings extends EventEmitter {
         folder.parent.removeFolder(folder)
       } else {
         folder.parent.removeFolder(folder)
-      }
-    })
-  }
-
-  configController () {
-    _.each(this.controllers, (controller, i) => {
-      if (controller.constructor.name === 'NumberControllerBox') {
-        controller.min(0)
-        controller.step(1)
-      }
-
-      // config custom property
-      if (controller.property === 'startDegree') {
-        const path = controller.path
-        const sliderController = controller.max(360)
-        sliderController.path = path
-        sliderController.onChange(this._onChange.bind(this, sliderController))
-        this.controllers[i] = sliderController
-      }
-      if (controller.path === '.center' && controller.property === 'x') {
-        const path = controller.path
-        const sliderController = controller.max(this.pageSize.width)
-        sliderController.path = path
-        sliderController.onChange(this._onChange.bind(this, sliderController))
-        this.controllers[i] = sliderController
-      }
-      if (controller.path === '.center' && controller.property === 'y') {
-        const path = controller.path
-        const sliderController = controller.max(this.pageSize.height)
-        sliderController.path = path
-        sliderController.onChange(this._onChange.bind(this, sliderController))
-        this.controllers[i] = sliderController
       }
     })
   }

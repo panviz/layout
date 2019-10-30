@@ -12,9 +12,10 @@ export default class Config {
         return value
       },
       set (obj, key, value) {
-        if (!_.isEqual(Reflect.get(obj, key), value))
-        Reflect.set(obj, key, value)
-        onChange()
+        if (!_.isEqual(Reflect.get(obj, key), value)) {
+          Reflect.set(obj, key, value)
+          onChange()
+        }
         return true
       },
     }
