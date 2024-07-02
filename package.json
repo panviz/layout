@@ -1,18 +1,18 @@
 {
-  "name": "@graphiy/layout",
-  "version": "0.2.0",
+  "name": "@panviz/layout",
+  "version": "0.0.1",
   "description": "Layouts",
   "keywords": [
     "data visualization",
     "layout algorythm"
   ],
-  "homepage": "https://github.com/graphiy/layout#readme",
+  "homepage": "https://github.com/panviz/layout#readme",
   "license": "MIT",
   "main": "dist/layout.js",
   "module": "index",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Graphiy/layout"
+    "url": "https://github.com/panviz/layout"
   },
   "scripts": {
     "build": "yarn build:lib && yarn build:demo",
@@ -20,7 +20,7 @@
     "build:demo": "cd demo/ && webpack --mode=production",
     "lint": "eslint . --ignore-path .gitignore",
     "start": "cd demo && webpack-dev-server --port 8007",
-    "deploy": "cd demo/ && rsync -azP --delete dist/ index.html daviste.com:/home/dmitra/daviste.com/static/demo/graphiy-layout",
+    "deploy": "cd demo/ && rsync -azP --delete dist/ index.html daviste.com:/home/dmitra/daviste.com/static/demo/panviz-layout",
     "test": "jest"
   },
   "babel": {
@@ -43,7 +43,7 @@
       "jest": true,
       "browser": true
     },
-    "extends": "@graphiy/eslint-config",
+    "extends": "@panviz/eslint-config",
     "globals": {
       "_": true,
       "$": true
@@ -60,7 +60,7 @@
     "@babel/core": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
     "@babel/register": "^7.5.5",
-    "@graphiy/eslint-config": "^0.1.0",
+    "@panviz/eslint-config": "^0.0.1",
     "css-loader": "^3.2.0",
     "d3-dsv": "^1.0.7",
     "d3-ease": "^1.0.3",

@@ -1,9 +1,9 @@
-![[](https://travis-ci.org/Graphiy/layout.svg?branch=master)](https://travis-ci.org/Graphiy/layout)
+![[](https://travis-ci.org/panviz/layout.svg?branch=master)](https://travis-ci.org/panviz/layout)
 
-# Graphiy Layout
+# Panviz Layout
 Collection of algorithms for coordinates computation in various layouts with no assumption on actual items positioning mechanism.
 
-## [Live demo](http://daviste.com/demo/graphiy-layout)
+## [Live demo](http://daviste.com/demo/panviz-layout)
 
 ## Layouts
 - Grid - defined by width or height
